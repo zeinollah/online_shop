@@ -17,10 +17,17 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'username': {'read_only': True}
         }
 
+    def user_name_create(self,validated_data):
+        digits = validated_data.get('phone_number')
+        three_digits = digits[-3:]
+        name = f"{validated_data.get('first_name')}{'_'}{validated_data.get('last_name')}"
+        user_name = f"{name}{'_'}{three_digits}"
+        return user_name
+
     def create(self, validated_data):
         first_name = validated_data['first_name']
         last_name = validated_data['last_name']
-        username = f"{first_name} {last_name}"
+        username = self.user_name_create(validated_data)
         email = validated_data['email']
         phone_number = validated_data['phone_number']
         address = validated_data['address']

@@ -9,6 +9,7 @@ User = get_user_model()
 class RegistrationViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = RegistrationSerializer
+    metadata_class = ['post']
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
