@@ -20,7 +20,7 @@ class User(AbstractUser):
     updated_at = models.DateTimeField(_('updated at'), auto_now=True)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}" + f" Roll: {self.user_roll}"
+        return f"{self.first_name} {self.last_name}" + f" Role: {self.user_roll}"
 
     class Meta:
         ordering = ['-created_at']
