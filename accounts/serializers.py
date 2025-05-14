@@ -75,15 +75,43 @@ class UpdateUserSerializer(serializers.ModelSerializer):
                   'email', 'phone_number', 'address',
                   'city', 'post_code', 'birth_day',
         )
+    def validate(self, attrs):
+        phone_number = attrs.get('phone_number')
+        if not phone_number.isdigit():
+            raise serializers.ValidationError(
+                "Phone Number must be digits",
+                status.HTTP_400_BAD_REQUEST)
 
-    def unique_validate(self,value):
-        existing_value_phone_number = get_user_model().objects.filter(phone_number=value['phone_number'])
-        if existing_value_phone_number.exists():
-            raise serializers.ValidationError('Phone Number already exists',status.HTTP_400_BAD_REQUEST)
+        if len(phone_number) != 11:
+            raise serializers.ValidationError(
+                "Phone Number must be 11 digits",
+                status.HTTP_400_BAD_REQUEST)
 
-        existing_value_email = get_user_model().objects.filter(email=value['email'])
-        if existing_value_email.exists():
-            raise serializers.ValidationError('Email already exists', status.HTTP_400_BAD_REQUEST)
+        return attrs
+
+    def unique_validate(self,attrs):
+        phone_number = attrs.get('phone_number')
+        email = attrs.get('email')
+        query_phone = get_user_model().objects.filter(phone_number=phone_number)
+        query_email = get_user_model().objects.filter(email=email)
+
+        if self.instance:
+            query_phone = query_phone.exclude(pk=self.instance.pk)
+            query_email = query_email.exclude(pk=self.instance.pk)
+
+        if query_phone.exists():
+            raise serializers.ValidationError(
+                "Phone Number already exists",
+                status.HTTP_400_BAD_REQUEST
+            )
+
+        if query_email.exists():
+            raise serializers.ValidationError(
+                "Email already exists",
+                status.HTTP_400_BAD_REQUEST
+            )
+
+        return attrs
 
 
     def update(self, instance, validated_data):
