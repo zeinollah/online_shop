@@ -113,7 +113,6 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
         return attrs
 
-
     def update(self, instance, validated_data):
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
@@ -126,3 +125,10 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+
+class DeleteUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ['id']

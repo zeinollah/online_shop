@@ -1,8 +1,11 @@
+from django.core.serializers import register_serializer
 from rest_framework import status, viewsets, mixins
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from .serializers import (RegistrationSerializer,
-                          UpdateUserSerializer)
+                          UpdateUserSerializer,
+                          DeleteUserSerializer)
 from .permissions import CurrentUserOrAdmin
 
 
@@ -13,7 +16,8 @@ User = get_user_model()
 class RegistrationViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = RegistrationSerializer
-    http_method_name = ['post']
+    permission_classes = [AllowAny]
+    http_method_names = ['post']
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -23,6 +27,23 @@ class RegistrationViewSet(viewsets.ModelViewSet):
             {"message": "User registered",},
              status=status.HTTP_201_CREATED
         )
+
+
+class UserInfoViewSet(mixins.RetrieveModelMixin,
+                      mixins.ListModelMixin,
+                      viewsets.GenericViewSet):
+
+    queryset = User.objects.all()
+    serializer_class = RegistrationSerializer
+    permission_classes = [CurrentUserOrAdmin]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff or user.is_superuser:
+            return User.objects.all()
+        return User.objects.filter(pk=user.pk)
+
 
 class UpdateUserViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
@@ -42,29 +63,17 @@ class UpdateUserViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
         )
 
 
+class DeleteUserViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = User.objects.all()
+    serializer_class = DeleteUserSerializer
+    permission_classes = [CurrentUserOrAdmin]
+    http_method_names = ['delete']
+    lookup_field = 'id'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# class ProfileViewSet(viewsets.ModelViewSet):
-#     permission_classes = [IsAuthenticated]
-#     queryset = User.objects.all()
-#     serializer_class = RegistrationSerializer
-#     http_method_names = ['get', 'put', 'patch', 'delete']
-#
-#     def get_queryset(self):
-#         if self.request.user.is_superuser:
-#             return User.objects.all()
-#         else:
-#             User.objects.filter(user = self.request.user)
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(
+            {"message": "User account deleted"},
+            status=status.HTTP_200_OK
+        )
