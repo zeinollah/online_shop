@@ -3,6 +3,14 @@ from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator
 
 
+def create_user_name(first_name, last_name, phone_number):
+    digit = phone_number[-3:]
+    name = f"{first_name}.{last_name}"
+    username = f"{name}.{digit}"
+    return username
+
+
+
 class RegistrationSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(
         label='Phone Number', min_length=11, max_length=11, required=True,
@@ -28,17 +36,13 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'username': {'read_only': True}
         }
 
-    def user_name_create(self,validated_data):
-        digits = validated_data.get('phone_number')
-        three_digits = digits[-3:]
-        name = f"{validated_data.get('first_name')}{'_'}{validated_data.get('last_name')}"
-        user_name = f"{name}{'_'}{three_digits}"
-        return user_name
 
     def create(self, validated_data):
         first_name = validated_data['first_name']
         last_name = validated_data['last_name']
-        username = self.user_name_create(validated_data)
+        username = create_user_name(validated_data['first_name'],
+                                   validated_data['last_name'],
+                                   validated_data['phone_number'])
         email = validated_data['email']
         phone_number = validated_data['phone_number']
         address = validated_data['address']
@@ -75,53 +79,75 @@ class UpdateUserSerializer(serializers.ModelSerializer):
                   'email', 'phone_number', 'address',
                   'city', 'post_code', 'birth_day',
         )
+        extra_kwargs = {
+            'username': {'read_only': True}
+        }
+
+
     def validate(self, attrs):
-        phone_number = attrs.get('phone_number')
-        if not phone_number.isdigit():
-            raise serializers.ValidationError(
-                "Phone Number must be digits",
-                status.HTTP_400_BAD_REQUEST)
+        if 'phone_number' in attrs:
+            phone_number = attrs.get('phone_number', None)
+            query_phone = get_user_model().objects.filter(phone_number=phone_number).exclude(pk=self.instance.pk)
 
-        if len(phone_number) != 11:
-            raise serializers.ValidationError(
-                "Phone Number must be 11 digits",
-                status.HTTP_400_BAD_REQUEST)
+            if not phone_number.isdigit() :
+                raise serializers.ValidationError(
+                        "Phone Number must be digits",
+                        status.HTTP_400_BAD_REQUEST)
 
-        return attrs
+            if len(phone_number) != 11:
+                 raise serializers.ValidationError(
+                        "Phone Number must be 11 digits",
+                         status.HTTP_400_BAD_REQUEST)
 
-    def unique_validate(self,attrs):
-        phone_number = attrs.get('phone_number')
-        email = attrs.get('email')
-        query_phone = get_user_model().objects.filter(phone_number=phone_number)
-        query_email = get_user_model().objects.filter(email=email)
+            if query_phone.exists():
+                raise serializers.ValidationError(
+                    "Phone Number already exists",
+                    status.HTTP_400_BAD_REQUEST)
 
-        if self.instance:
-            query_phone = query_phone.exclude(pk=self.instance.pk)
-            query_email = query_email.exclude(pk=self.instance.pk)
+        if 'email' in attrs:
+            email = attrs.get('email')
+            query_email = get_user_model().objects.filter(email=email).exclude(pk=self.instance.pk)
 
-        if query_phone.exists():
-            raise serializers.ValidationError(
-                "Phone Number already exists",
-                status.HTTP_400_BAD_REQUEST
-            )
-
-        if query_email.exists():
-            raise serializers.ValidationError(
-                "Email already exists",
-                status.HTTP_400_BAD_REQUEST
-            )
+            if query_email.exists():
+                raise serializers.ValidationError(
+                    "Email already exists",
+                    status.HTTP_400_BAD_REQUEST
+                )
 
         return attrs
+
+    # def username_update(self, validated_data, attrs, instance):
+    #     first_name = attrs.get('first_name')
+    #     last_name = attrs.get('last_name')
+    #     phone_number = attrs.get('phone_number')
+    #     three_digits = phone_number[-3:]
+    #     check_username = f"{first_name}.{last_name}.{three_digits}"
+    #
+    #     if instance.username != check_username:
+    #         new_username = create_user_name(validated_data['first_name'],
+    #                                         validated_data['last_name'],
+    #                                         validated_data['phone_number'])
+    #         return new_username
+    #     return instance.username
 
     def update(self, instance, validated_data):
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.first_name = validated_data.get('first_name', instance.first_name).capitalize()
+        instance.last_name = validated_data.get('last_name', instance.last_name).capitalize()
         instance.email = validated_data.get('email', instance.email)
         instance.phone_number = validated_data.get('phone_number', instance.phone_number)
         instance.address = validated_data.get('address', instance.address)
         instance.city = validated_data.get('city', instance.city)
         instance.post_code = validated_data.get('post_code', instance.post_code)
         instance.birth_day = validated_data.get('birth_day', instance.birth_day)
+
+        new_username = create_user_name(
+            first_name=instance.first_name,
+            last_name=instance.last_name,
+            phone_number=instance.phone_number,
+        )
+
+        if instance.username != new_username:
+            instance.username = new_username
 
         instance.save()
         return instance
