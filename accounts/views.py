@@ -1,4 +1,3 @@
-from django.core.serializers import register_serializer
 from rest_framework import status, viewsets, mixins
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response

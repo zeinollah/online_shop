@@ -3,11 +3,11 @@ from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator
 
 
-def create_user_name(first_name, last_name, phone_number):
-    digit = phone_number[-3:]
-    name = f"{first_name}.{last_name}"
-    username = f"{name}.{digit}"
-    return username
+# def create_user_name(first_name, last_name, phone_number):
+#     digit = phone_number[-3:]
+#     name = f"{first_name}.{last_name}"
+#     username = f"{name}.{digit}"
+#     return username
 
 
 
@@ -25,7 +25,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ('id', 'first_name', 'last_name','username',
+        fields = ('id', 'first_name', 'last_name',
                   'email', 'password',
                   'phone_number', 'address',
                   'city', 'user_roll',
@@ -33,16 +33,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
                   'created_at', 'updated_at')
         extra_kwargs = {
             'password': {'write_only': True},
-            'username': {'read_only': True}
         }
 
 
     def create(self, validated_data):
         first_name = validated_data['first_name']
         last_name = validated_data['last_name']
-        username = create_user_name(validated_data['first_name'],
-                                   validated_data['last_name'],
-                                   validated_data['phone_number'])
         email = validated_data['email']
         phone_number = validated_data['phone_number']
         address = validated_data['address']
@@ -56,7 +52,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         new_user = user.objects.create(
             first_name=first_name,
             last_name=last_name,
-            username=username,
             email=email,
             phone_number=phone_number,
             address=address,
@@ -79,9 +74,6 @@ class UpdateUserSerializer(serializers.ModelSerializer):
                   'email', 'phone_number', 'address',
                   'city', 'post_code', 'birth_day',
         )
-        extra_kwargs = {
-            'username': {'read_only': True}
-        }
 
 
     def validate(self, attrs):
@@ -140,14 +132,14 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         instance.post_code = validated_data.get('post_code', instance.post_code)
         instance.birth_day = validated_data.get('birth_day', instance.birth_day)
 
-        new_username = create_user_name(
-            first_name=instance.first_name,
-            last_name=instance.last_name,
-            phone_number=instance.phone_number,
-        )
-
-        if instance.username != new_username:
-            instance.username = new_username
+        # new_username = create_user_name(
+        #     first_name=instance.first_name,
+        #     last_name=instance.last_name,
+        #     phone_number=instance.phone_number,
+        # )
+        #
+        # if instance.username != new_username:
+        #     instance.username = new_username
 
         instance.save()
         return instance
