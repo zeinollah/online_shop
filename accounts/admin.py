@@ -7,7 +7,7 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ['email', 'last_name']
     fieldsets = (
         (None,
-         {'fields': ('email', 'first_name', 'last_name')}),
+         {'fields': ('email', 'password',  'first_name', 'last_name')}),
         ('Permissions',
          {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates',
