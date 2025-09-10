@@ -2,8 +2,8 @@ from django.contrib import admin
 from .models import User
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['id', 'email', 'first_name', 'last_name' ,'user_roll']
-    list_filter = ['user_roll', 'is_active','is_staff']
+    list_display = ['id', 'email', 'first_name', 'last_name' ,'user_role']
+    list_filter = ['user_role', 'is_active','is_staff']
     search_fields = ['email', 'last_name']
     fieldsets = (
         (None,
@@ -13,12 +13,12 @@ class UserAdmin(admin.ModelAdmin):
         ('Important dates',
          {'fields': ('last_login', 'date_joined')}),
         ('Custom Fields',
-         {'fields': ('user_roll',)}),
+         {'fields': ('user_role',)}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'first_name', 'last_name', 'user_roll'),
+            'fields': ('email', 'password1', 'password2', 'first_name', 'last_name', 'user_role'),
         }),
     )
 
