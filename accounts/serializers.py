@@ -15,7 +15,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ('id', 'first_name', 'last_name',
-                  'email', 'password','user_roll',
+                  'email', 'password','user_role',
                   'created_at', 'updated_at')
         extra_kwargs = {
             'password': {'write_only': True},
@@ -26,7 +26,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         first_name = validated_data['first_name']
         last_name = validated_data['last_name']
         email = validated_data['email']
-        user_roll = validated_data['user_roll']
+        user_role = validated_data['user_role']
         password = validated_data.pop('password')
 
         user = get_user_model()
@@ -34,7 +34,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             first_name=first_name,
             last_name=last_name,
             email=email,
-            user_roll=user_roll,
+            user_roll=user_role,
         )
         new_user.set_password(password)
         new_user.save()
