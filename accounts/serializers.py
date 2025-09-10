@@ -34,7 +34,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             first_name=first_name,
             last_name=last_name,
             email=email,
-            user_roll=user_role,
+            user_role=user_role,
         )
         new_user.set_password(password)
         new_user.save()
