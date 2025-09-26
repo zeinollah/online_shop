@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-from pkg_resources import require
 
 # getting user model object
 User = get_user_model()
@@ -18,7 +17,7 @@ class CustomerProfile(models.Model):
     account = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_profile')
     profile_avatar = models.ImageField(_('profile avatar'), upload_to='customer/profile_pics', blank=True, null=True)
     gender = models.CharField(_('Gender'),max_length=5, choices=USER_GENDER_CHOICES, blank=True, null=True)
-    phone_number = models.CharField(_('Phone Number'),max_length=11, unique=True,default=None, blank=False, null=False)
+    phone_number = models.CharField(_('Phone Number'),max_length=11, unique=True, blank=False, null=False)
     city = models.CharField(_('City'),max_length=50, blank=True, null=True)
     address = models.CharField(_('address'), max_length=250, blank=True, null=True)
     post_code = models.CharField(_('Post Code'), max_length=10, blank=False, null=False)

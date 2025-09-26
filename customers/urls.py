@@ -1,11 +1,10 @@
-from rest_framework import routers
-from .views import CustomerProfileViewSet
+from rest_framework.routers import DefaultRouter
+from .views import (CustomerProfileCreateViewSet,
+                    CustomerProfileUpdateViewSet,
+                    )
 
-
-router = routers.DefaultRouter()
-
-router.register(r"customers_profile", CustomerProfileViewSet, basename="customers_profile")
-
-
+router = DefaultRouter()
+router.register(r'create-profiles', CustomerProfileCreateViewSet, basename='create-profiles')
+router.register(r'update-profiles', CustomerProfileUpdateViewSet, basename='update-profiles')
 
 urlpatterns = router.urls

@@ -4,7 +4,7 @@ from .models import CustomerProfile
 
 
 class CustomerProfileAdmin(admin.ModelAdmin):
-    list_display = ["full_name",
+    list_display = ["id", "full_name",
         "phone_number","gender", "city","post_code","is_verified",
     ]
     list_filter = ["gender", "city", "is_verified",]

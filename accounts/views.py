@@ -32,6 +32,8 @@ class UserInfoViewSet(mixins.RetrieveModelMixin,
                       mixins.ListModelMixin,
                       viewsets.GenericViewSet):
 
+    TO_DO = "replace the mixins with ReadOnlyModelViewSet "
+
     queryset = User.objects.all()
     serializer_class = RegistrationSerializer
     permission_classes = [CurrentUserOrAdmin]
