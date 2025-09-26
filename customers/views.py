@@ -1,11 +1,12 @@
 from rest_framework import viewsets, status, mixins
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from utils.permissions import IsProfileOwnerOrSuperuser
 from .models import CustomerProfile
 from .serializers import (CustomerProfileSerializer,
-                          CustomerProfileUpdateSerializer,)
+                          CustomerProfileUpdateSerializer,
+                          )
+
 
 
 
@@ -32,6 +33,20 @@ class CustomerProfileCreateViewSet(viewsets.ModelViewSet):
         )
 
 
+
+class CustomerProfileInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = CustomerProfile.objects.all()
+    serializer_class = CustomerProfileSerializer
+    permission_classes = [IsProfileOwnerOrSuperuser]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.is_staff:
+            return CustomerProfile.objects.all()
+        return CustomerProfile.objects.filter(account=user)
+
+
+
 class CustomerProfileUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = CustomerProfile.objects.all()
     serializer_class = CustomerProfileUpdateSerializer
@@ -44,5 +59,20 @@ class CustomerProfileUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericView
         serializer.save()
         return Response(
             {"message": "Profile updated successfully"},
+            status=status.HTTP_200_OK
+        )
+
+
+
+class CustomerProfileDetailViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = CustomerProfile.objects.all()
+    serializer_class = CustomerProfileSerializer
+    permission_classes = [IsProfileOwnerOrSuperuser]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(
+            "message: Profile deleted successfully",
             status=status.HTTP_200_OK
         )
