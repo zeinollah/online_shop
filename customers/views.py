@@ -61,3 +61,18 @@ class CustomerProfileUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericView
             {"message": "Profile updated successfully"},
             status=status.HTTP_200_OK
         )
+
+
+
+class CustomerProfileDetailViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = CustomerProfile.objects.all()
+    serializer_class = CustomerProfileSerializer
+    permission_classes = [IsProfileOwnerOrSuperuser]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(
+            "message: Profile deleted successfully",
+            status=status.HTTP_200_OK
+        )
