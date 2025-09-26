@@ -1,11 +1,12 @@
 from rest_framework import viewsets, status, mixins
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from utils.permissions import IsProfileOwnerOrSuperuser
 from .models import CustomerProfile
 from .serializers import (CustomerProfileSerializer,
-                          CustomerProfileUpdateSerializer,)
+                          CustomerProfileUpdateSerializer,
+                          )
+
 
 
 
@@ -30,6 +31,20 @@ class CustomerProfileCreateViewSet(viewsets.ModelViewSet):
             {"message": "Profile Created"},
             status=status.HTTP_201_CREATED,
         )
+
+
+
+class CustomerProfileInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = CustomerProfile.objects.all()
+    serializer_class = CustomerProfileSerializer
+    permission_classes = [IsProfileOwnerOrSuperuser]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.is_staff:
+            return CustomerProfile.objects.all()
+        return CustomerProfile.objects.filter(account=user)
+
 
 
 class CustomerProfileUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
