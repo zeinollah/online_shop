@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import User
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['id', 'email', 'first_name', 'last_name' ,'user_role']
+    list_display = ['id', 'email', 'first_name', 'last_name' ,'user_role','is_active']
     list_filter = ['user_role', 'is_active','is_staff']
     search_fields = ['email', 'last_name']
     fieldsets = (

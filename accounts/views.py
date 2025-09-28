@@ -28,16 +28,12 @@ class RegistrationViewSet(viewsets.ModelViewSet):
         )
 
 
-class UserInfoViewSet(mixins.RetrieveModelMixin,
-                      mixins.ListModelMixin,
-                      viewsets.GenericViewSet):
+class UserInfoViewSet(viewsets.ReadOnlyModelViewSet):
 
-    TO_DO = "replace the mixins with ReadOnlyModelViewSet "
 
     queryset = User.objects.all()
     serializer_class = RegistrationSerializer
     permission_classes = [CurrentUserOrAdmin]
-    http_method_names = ['get']
 
     def get_queryset(self):
         user = self.request.user
@@ -66,9 +62,8 @@ class UpdateUserViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
 
 class DeleteUserViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
-    serializer_class = DeleteUserSerializer
+    serializer_class = RegistrationSerializer
     permission_classes = [CurrentUserOrAdmin]
-    http_method_names = ['delete']
     lookup_field = 'id'
 
     def destroy(self, request, *args, **kwargs):
