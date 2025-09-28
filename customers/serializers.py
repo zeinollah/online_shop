@@ -12,7 +12,7 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
             message='This National Code used for verified another user.')]
     )
     phone_number = serializers.CharField(
-        label='Phone Number', required=True,
+        label='Phone Number', required=False,
         validators=[UniqueValidator(
             queryset=CustomerProfile.objects.all(),
             message ='This Phone Number is already in use.')]
