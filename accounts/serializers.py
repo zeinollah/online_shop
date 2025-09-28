@@ -71,10 +71,3 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
-
-
-
-class DeleteUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = get_user_model()
-        fields = ['id']
