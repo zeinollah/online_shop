@@ -7,11 +7,11 @@ User = get_user_model()
 
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
-    if created:
+    if created and instance.user_role == 'customer':
         CustomerProfile.objects.create(account = instance)
 
 
 @receiver(post_save, sender=CustomerProfile)
 def save_profile(sender, instance, **kwargs):
-    if hasattr(instance, 'customer_profile')and instance.user_role == 'customer':
+    if hasattr(instance, 'customer_profile') and instance.user_role == 'customer':
         instance.customer_profile.save()

@@ -4,12 +4,18 @@ from .models import CustomerProfile
 
 
 class CustomerProfileAdmin(admin.ModelAdmin):
-    list_display = ["id", "full_name",
-        "phone_number","gender", "city","post_code","is_verified",
+    list_display = ["id", "full_name", "email",
+        "phone_number","gender", "city","post_code", "is_active", "is_verified",
     ]
     list_filter = ["gender", "city", "is_verified",]
-    search_fields = ["account__first_name", "account__last_name"]
+    search_fields = ["account__first_name", "account__last_name", "account__email"]
     ordering = ['-created_at']
+
+    def email(self, obj):
+        return obj.account.email
+
+    def is_active(self,obj):
+        return obj.account.is_active
 
     def full_name(self,obj):
         return f"{obj.account.first_name} {obj.account.last_name}"
