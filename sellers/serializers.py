@@ -50,7 +50,7 @@ class SellerProfileSerializer(serializers.ModelSerializer):
 
             if not store_address or store_address.strip() == "":
                 raise serializers.ValidationError({
-                        "store_address" : "You should write the store address. "
+                        "store_address" : "Store address is required. "
                 })
 
         return attrs
