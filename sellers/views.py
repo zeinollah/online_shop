@@ -45,3 +45,20 @@ class SellerProfileInfoViewSet(viewsets.ReadOnlyModelViewSet):
         return SellerProfile.objects.filter(account=user)
 
     TO_DO : "change code to when user try to watch other user profile response be 401 "
+
+
+
+class SellerProfileUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    queryset = SellerProfile.objects.all()
+    serializer_class = SellerProfileSerializer
+    permission_classes = [IsProfileOwnerOrSuperuser]
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"message": "Profile Updated"},
+            status=status.HTTP_200_OK
+        )
