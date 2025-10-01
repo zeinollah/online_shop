@@ -4,7 +4,7 @@ from .models import SellerProfile
 class SellerProfileAdmin(admin.ModelAdmin):
     list_display =["id", "full_name", "email",
                    "phone_number", "city", "store_name", "physical_store", "store_address",
-                   "store_post_code", "is_active", "is_verified",
+                   "post_code", "is_active", "is_verified",
                    "created_at", "updated_at"
                    ]
 

@@ -13,7 +13,7 @@ class SellerProfile(models.Model):
     store_name = models.CharField(_('store name'), max_length=50, blank=True, null=True)
     physical_store = models.BooleanField(_('Physical Store'), default=True)
     store_address = models.CharField(_('store Address'), max_length=250, blank=True, null=True)
-    store_post_code = models.CharField(_('Store Post Code'), max_length=10, blank=True, null=True)
+    post_code = models.CharField(_('Post Code'), max_length=10, blank=True, null=True)
     national_code = models.CharField(_('national Code'), max_length=10, unique=True, blank=True, null=True)
     id_card_picture = models.ImageField(_('ID card picture'), upload_to='customer/id_card_pics', blank=True, null=True)
     birth_day = models.DateField(_('Birth day'), blank=True, null=True)
