@@ -13,9 +13,12 @@ class CustomerProfileAdmin(admin.ModelAdmin):
 
     def email(self, obj):
         return obj.account.email
+    email.admin_order_field = 'account'
 
     def is_active(self,obj):
         return obj.account.is_active
+    is_active.boolean = True
+    is_active.admin_order_field = 'is_active'
 
     def full_name(self,obj):
         return f"{obj.account.first_name} {obj.account.last_name}"
