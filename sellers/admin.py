@@ -3,8 +3,8 @@ from .models import SellerProfile
 
 class SellerProfileAdmin(admin.ModelAdmin):
     list_display =["id", "full_name", "email",
-                   "phone_number", "city", "store_name", "store_address",
-                   "store_post_code", "is_active", "is_verified",
+                   "phone_number", "city", "store_name", "physical_store", "store_address",
+                   "post_code", "is_active", "is_verified",
                    "created_at", "updated_at"
                    ]
 

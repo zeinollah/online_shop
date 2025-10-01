@@ -24,8 +24,8 @@ class SellerProfileSerializer(serializers.ModelSerializer):
                     validate_national_code,
         ])
 
-    store_post_code = serializers.CharField(
-        label='Store Post Code',
+    post_code = serializers.CharField(
+        label='Post Code',
         validators=[validate_post_code],
         error_messages = {
          "required": "Post code is required."
@@ -50,7 +50,15 @@ class SellerProfileSerializer(serializers.ModelSerializer):
 
             if not store_address or store_address.strip() == "":
                 raise serializers.ValidationError({
-                        "store_address" : "You should write the store address. "
+                        "store_address" : "Store address is required. "
+                })
+
+        if physical_store is False:
+            address = attrs.get('address')
+
+            if not address or address.strip() == "":
+                raise serializers.ValidationError({
+                    "address" : "Address is required. "
                 })
 
         return attrs

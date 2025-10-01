@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status,mixins
+from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from .models import SellerProfile
 from .serializers import SellerProfileSerializer
@@ -31,3 +31,50 @@ class SellerProfileViewSet(viewsets.ModelViewSet):
             {"message": "Profile Created"},
             status=status.HTTP_201_CREATED,
         )
+
+
+
+class SellerProfileInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = SellerProfileSerializer
+    permission_classes = [IsProfileOwnerOrSuperuser]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.is_staff:
+            return SellerProfile.objects.all()
+        return SellerProfile.objects.filter(account=user)
+
+    TO_DO : "change code to when user try to watch other user profile response be 401 "
+
+
+
+class SellerProfileUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    queryset = SellerProfile.objects.all()
+    serializer_class = SellerProfileSerializer
+    permission_classes = [IsProfileOwnerOrSuperuser]
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"message": "Profile Updated"},
+            status=status.HTTP_200_OK
+        )
+
+
+
+class SellerProfileDeleteViewSet(viewsets.ModelViewSet):
+    queryset = SellerProfile.objects.all()
+    serializer_class = SellerProfileSerializer
+    permission_classes = [IsProfileOwnerOrSuperuser]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(
+            {"message": "Profile Deleted"},
+            status=status.HTTP_200_OK
+        )
+
