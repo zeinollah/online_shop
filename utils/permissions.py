@@ -2,8 +2,7 @@ from rest_framework import permissions
 
 class IsProfileOwnerOrSuperuser(permissions.BasePermission):
     """
-    This class check the user before update action on Customer Profile to make sure
-    the owner or admin try to update and edit profile.
+    This class check the user before all actions to make sure user is admin or owner.
     """
 
     message = 'You DO NOT have permission to do this.'
