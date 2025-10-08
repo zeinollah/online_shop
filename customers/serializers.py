@@ -100,3 +100,6 @@ class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
 
         return value
 
+
+# TODO = Remove the CustomerProfileUpdateSerializer and use the CustomerProfileSerializer.
+# TODO = Use the validate class of validation utils file instead of field validation.
