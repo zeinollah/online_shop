@@ -44,7 +44,7 @@ class SellerProfileInfoViewSet(viewsets.ReadOnlyModelViewSet):
             return SellerProfile.objects.all()
         return SellerProfile.objects.filter(account=user)
 
-    TO_DO : "change code to when user try to watch other user profile response be 401 "
+    # TODO : change code to when user try to watch other user profile response be 401
 
 
 
