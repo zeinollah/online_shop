@@ -71,3 +71,10 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+
+
+
+# TODO = refactor the RegistrationSerializer
+# TODO = Use on serializer class

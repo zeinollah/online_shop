@@ -11,3 +11,5 @@ router.register(r'update', UpdateUserViewSet, basename='update')
 router.register(r'delete', DeleteUserViewSet, basename='delete')
 
 urlpatterns = router.urls
+
+# TODO = Change the update and delete to [user-update , user-delete]
