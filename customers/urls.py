@@ -12,3 +12,5 @@ router.register(r'info-profiles', CustomerProfileInfoViewSet, basename='info-pro
 router.register(r'delete-profiles', CustomerProfileDetailViewSet, basename='delete-profiles')
 
 urlpatterns = router.urls
+
+# TODO = Add -customers- into urls and remove s from profiles
