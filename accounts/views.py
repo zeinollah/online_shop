@@ -73,3 +73,6 @@ class DeleteUserViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
             {"message": "User account deleted"},
             status=status.HTTP_200_OK
         )
+
+
+# TODO = Replace the local permission class by utils permission class
