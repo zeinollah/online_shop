@@ -27,9 +27,10 @@ class SellerProfileSerializer(serializers.ModelSerializer):
     post_code = serializers.CharField(
         label='Post Code',
         validators=[validate_post_code],
-        error_messages = {
-         "required": "Post code is required."
+            error_messages = {
+             "required": "Post code is required."
          })
+    # TODO = test this validation make sure for error_messages
 
     birth_day = serializers.DateField(
         label='Birth date', required=False,

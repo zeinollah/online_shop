@@ -23,3 +23,8 @@ class SellerProfile(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+    # TODO = Create store model and separate seller and store
+    # TODO = Write @property for total in stock product for seller or store
+    # TODO = Correct the path of id_card_picture to 'seller/id_card_pics'
