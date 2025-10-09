@@ -1,3 +1,30 @@
 from django.contrib import admin
+from .models import Product
 
-# Register your models here.
+
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ["id", "store_name", "phone_number",
+                    "name", "city", "category",
+                    "price", "in_stock",
+                    "slug", "description",
+                    "created_at", "updated_at"]
+
+    list_filter = ["in_stock", "seller__city",]
+
+    search_fields = ["name", "seller__store_name"]
+
+
+    def city(self, obj):
+        return obj.seller.city
+    city.short_description = "City"
+
+    def store_name(self, obj):
+        return obj.seller.store_name
+    store_name.short_description = "Store Name"
+
+    def phone_number(self, obj):
+        return obj.seller.phone_number
+    phone_number.short_description = "Phone Number"
+
+
+admin.site.register(Product, ProductAdmin)
