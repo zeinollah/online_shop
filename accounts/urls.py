@@ -7,9 +7,7 @@ from .views import (RegistrationViewSet,
 router = DefaultRouter()
 router.register(r'register', RegistrationViewSet, basename='register')
 router.register(r'userinfo', UserInfoViewSet, basename='userinfo')
-router.register(r'update', UpdateUserViewSet, basename='update')
-router.register(r'delete', DeleteUserViewSet, basename='delete')
+router.register(r'user-update', UpdateUserViewSet, basename='user-update')
+router.register(r'user-delete', DeleteUserViewSet, basename='user-delete')
 
 urlpatterns = router.urls
-
-# TODO = Change the update and delete to [user-update , user-delete]
