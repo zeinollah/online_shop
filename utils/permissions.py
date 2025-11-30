@@ -12,3 +12,22 @@ class IsProfileOwnerOrSuperuser(permissions.BasePermission):
         if user.is_superuser or user.is_staff:
             return True
         return obj.seller.account == user
+
+
+
+class IsOrderOwnerOrSuperuser(permissions.BasePermission):
+    """
+    This class check only customer or admin can cancel the order.
+    """
+
+    message = 'You can NOT DO this action.'
+
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if user.is_superuser or user.is_staff:
+            return True
+
+        if hasattr(user, 'customer_profile'):
+            return obj.account == user.customer_profile
+
+        return False
