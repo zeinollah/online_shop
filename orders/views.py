@@ -62,7 +62,7 @@ class OrderUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
 
 
 
-class OrderDetailViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class OrderDeleteViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated,IsOrderOwnerOrSuperuser]
