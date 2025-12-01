@@ -2,7 +2,7 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from utils.permissions import IsOrderOwnerOrSuperuser
-from .serializers import Order, OrderSerializer
+from .serializers import Order, OrderSerializer, OrderUpdateSerializer
 
 
 class OrderCreateViewSet(viewsets.ModelViewSet):
@@ -46,7 +46,7 @@ class OrderInfoViewSet(viewsets.ReadOnlyModelViewSet):
 
 class OrderUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Order.objects.all()
-    serializer_class = OrderSerializer
+    serializer_class = OrderUpdateSerializer
     permission_classes = [IsAuthenticated,IsOrderOwnerOrSuperuser]
 
     def update(self, request, *args, **kwargs):
@@ -64,7 +64,7 @@ class OrderUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
 
 class OrderDeleteViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Order.objects.all()
-    serializer_class = OrderSerializer
+    serializer_class = OrderUpdateSerializer
     permission_classes = [IsAuthenticated,IsOrderOwnerOrSuperuser]
 
     def destroy(self, request, *args, **kwargs):
