@@ -51,18 +51,19 @@ class OrderUpdateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
 
-        if self.instance.order_status == 'cancelled' and attrs.get('order_status') == 'cancelled':
-            raise serializers.ValidationError({
-                "order_status":"Order already cancelled"
-            })
+        if attrs:
+            if self.instance.order_status == 'cancelled' and attrs.get('order_status') == 'cancelled':
+                raise serializers.ValidationError({
+                    "order_status": "Order already cancelled"
+                })
 
-        if not self.instance.order_status in ['pending', 'paid', 'processing'] and attrs.get('order_status') == 'cancelled':
-            raise serializers.ValidationError({
-                "order_status":f"Order cannot be cancel in this {self.instance.order_status} status "
-                                 "Only the 'pending' 'paid' and 'processing' are able to cancel"
-            })
+            if not self.instance.order_status in ['pending', 'paid', 'processing'] and attrs.get('order_status') == 'cancelled':
+                raise serializers.ValidationError({
+                    "order_status": f"Order cannot be cancel in this {self.instance.order_status} status "
+                                    "Only the 'pending' 'paid' and 'processing' are able to cancel"
+                })
 
-        if self.instance.order_status == 'cancelled' and attrs.get('order_status') != 'cancelled':
-            raise serializers.ValidationError({
-                "order_status": "You cannot change the order cancelled"
-            })
+            if self.instance.order_status == 'cancelled' and attrs.get('order_status') != 'cancelled':
+                raise serializers.ValidationError({
+                    "order_status": "Cannot modify a cancelled order"
+                })
