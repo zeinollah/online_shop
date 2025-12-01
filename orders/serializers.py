@@ -1,4 +1,4 @@
-from rest_framework import serializers, validators
+from rest_framework import serializers
 from .models import Order, OrderItem
 
 
@@ -32,7 +32,7 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = '__all__'
         read_only_fields =(
-            'id', 'customer','order_number',
+            'id', 'customer','order_number', 'total_price',
             'created_at', 'updated_at'
         )
 
@@ -43,8 +43,8 @@ class OrderUpdateSerializer(serializers.ModelSerializer):
         model = Order
         fields = '__all__'
         read_only_fields = [
-            'id', 'customer', 'order_number',
-            'total_price', 'is_paid', 'paid_at',
+            'id', 'customer', 'order_number', 'total_price',
+            'is_paid', 'paid_at',
             'created_at', 'updated_at'
         ]
 
