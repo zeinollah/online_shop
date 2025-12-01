@@ -12,7 +12,7 @@ class OrderCreateViewSet(viewsets.ModelViewSet):
     http_method_names = ['post']
 
     def create(self, request, *args, **kwargs):
-        if not hasattr(request.user, 'customer.profile'):
+        if not hasattr(request.user, 'customer_profile'):
             return Response(
                 {"message": "Complete the profile is required to create an order."},
                 status=status.HTTP_403_FORBIDDEN
