@@ -6,7 +6,7 @@ from .views import (OrderCreateViewSet,
                     )
 
 router = DefaultRouter()
-router.register(r'orders-create', OrderCreateViewSet, basename='order_create')
+router.register(r'order-create', OrderCreateViewSet, basename='order_create')
 router.register(r'order-info', OrderInfoViewSet, basename='order_info')
 router.register(r'order-delete', OrderDeleteViewSet, basename='order_detail')
 router.register(r'order-update', OrderUpdateViewSet, basename='order_update')
