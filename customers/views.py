@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from utils.permissions import IsProfileOwnerOrSuperuser
+from utils.permissions import IsCustomerProfileOwnerOrSuperuser
 from .models import CustomerProfile
 from .serializers import (CustomerProfileSerializer,
                           CustomerProfileUpdateSerializer,
@@ -37,7 +37,7 @@ class CustomerProfileCreateViewSet(viewsets.ModelViewSet):
 class CustomerProfileInfoViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CustomerProfile.objects.all()
     serializer_class = CustomerProfileSerializer
-    permission_classes = [IsProfileOwnerOrSuperuser]
+    permission_classes = [IsAuthenticated,IsCustomerProfileOwnerOrSuperuser]
 
     def get_queryset(self):
         user = self.request.user
@@ -50,7 +50,7 @@ class CustomerProfileInfoViewSet(viewsets.ReadOnlyModelViewSet):
 class CustomerProfileUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = CustomerProfile.objects.all()
     serializer_class = CustomerProfileUpdateSerializer
-    permission_classes =[IsProfileOwnerOrSuperuser]
+    permission_classes = [IsAuthenticated,IsCustomerProfileOwnerOrSuperuser]
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -67,7 +67,7 @@ class CustomerProfileUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericView
 class CustomerProfileDetailViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = CustomerProfile.objects.all()
     serializer_class = CustomerProfileSerializer
-    permission_classes = [IsProfileOwnerOrSuperuser]
+    permission_classes = [IsAuthenticated,IsCustomerProfileOwnerOrSuperuser]
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
