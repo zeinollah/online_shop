@@ -31,5 +31,9 @@ class CustomerProfile(models.Model):
     @property
     def full_name(self):
         return f"{self.account.first_name} {self.account.last_name}"
+
+    def __str__(self):
+        return self.full_name
+
     class Meta:
         ordering = ['-created_at']
