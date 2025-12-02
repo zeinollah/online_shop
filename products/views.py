@@ -3,7 +3,7 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from utils.permissions import IsProfileOwnerOrSuperuser
+from utils.permissions import IsSellerProfileOwnerOrSuperuser
 from .models import Product
 from .serializers import ProductSerializer
 
@@ -11,7 +11,7 @@ from .serializers import ProductSerializer
 class ProductViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes =[IsAuthenticated, IsProfileOwnerOrSuperuser]
+    permission_classes =[IsAuthenticated, IsSellerProfileOwnerOrSuperuser]
 
 
     def create(self, request, *args, **kwargs):
@@ -28,7 +28,7 @@ class ProductViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 class ProductDetailViewSet(ReadOnlyModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes =[IsAuthenticated, IsProfileOwnerOrSuperuser]
+    permission_classes =[IsAuthenticated, IsSellerProfileOwnerOrSuperuser]
 
     def get_queryset(self):
         user = self.request.user
@@ -41,7 +41,7 @@ class ProductDetailViewSet(ReadOnlyModelViewSet):
 class ProductUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes =[IsAuthenticated,IsProfileOwnerOrSuperuser]
+    permission_classes =[IsAuthenticated,IsSellerProfileOwnerOrSuperuser]
 
     def update(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -56,7 +56,7 @@ class ProductUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
 class ProductDeleteViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated, IsProfileOwnerOrSuperuser]
+    permission_classes = [IsAuthenticated, IsSellerProfileOwnerOrSuperuser]
     http_method_names = ['delete']
 
     def destroy(self, request, *args, **kwargs):
