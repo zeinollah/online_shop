@@ -8,6 +8,9 @@ from utils.validators import (validate_national_code,
 
 
 class SellerProfileSerializer(serializers.ModelSerializer):
+
+    full_name = serializers.CharField()
+
     phone_number = serializers.CharField(
         label='Phone number',
         validators=[UniqueValidator(
