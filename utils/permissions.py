@@ -41,6 +41,4 @@ class IsOrderOwnerOrSuperuser(permissions.BasePermission):
             return True
 
         if hasattr(user, 'customer_profile'):
-            return obj.account == user.customer_profile
-
-        return False
+            return obj.customer == user.customer_profile
