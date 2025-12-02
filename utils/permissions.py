@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 
-class IsProfileOwnerOrSuperuser(permissions.BasePermission):
+class IsSellerProfileOwnerOrSuperuser(permissions.BasePermission):
     """
     This class check the user before all actions to make sure user is admin or owner for seller.
     """
@@ -12,7 +12,7 @@ class IsProfileOwnerOrSuperuser(permissions.BasePermission):
         user = request.user
         if user.is_superuser or user.is_staff:
             return True
-        return obj.seller.account == user
+        return obj.account == user
 
 
 class IsCustomerProfileOwnerOrSuperuser(permissions.BasePermission):

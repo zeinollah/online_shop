@@ -21,6 +21,9 @@ class SellerProfile(models.Model):
     created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Updated at'), auto_now=True)
 
+    @property
+    def full_name(self):
+        return f"{self.account.first_name} {self.account.last_name}"
     class Meta:
         ordering = ['-created_at']
 

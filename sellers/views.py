@@ -1,15 +1,16 @@
 from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from .models import SellerProfile
 from .serializers import SellerProfileSerializer
-from utils.permissions import IsProfileOwnerOrSuperuser
+from utils.permissions import IsSellerProfileOwnerOrSuperuser
 
 
 
 class SellerProfileViewSet(viewsets.ModelViewSet):
     queryset = SellerProfile.objects.all()
     serializer_class = SellerProfileSerializer
-    permission_classes = [IsProfileOwnerOrSuperuser]
+    permission_classes = [IsAuthenticated]
     http_method_names = ['post']
 
     def create(self, request, *args, **kwargs):
@@ -36,7 +37,7 @@ class SellerProfileViewSet(viewsets.ModelViewSet):
 
 class SellerProfileInfoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SellerProfileSerializer
-    permission_classes = [IsProfileOwnerOrSuperuser]
+    permission_classes = [IsAuthenticated,IsSellerProfileOwnerOrSuperuser]
 
     def get_queryset(self):
         user = self.request.user
@@ -51,7 +52,7 @@ class SellerProfileInfoViewSet(viewsets.ReadOnlyModelViewSet):
 class SellerProfileUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = SellerProfile.objects.all()
     serializer_class = SellerProfileSerializer
-    permission_classes = [IsProfileOwnerOrSuperuser]
+    permission_classes = [IsAuthenticated,IsSellerProfileOwnerOrSuperuser]
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -68,7 +69,7 @@ class SellerProfileUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSe
 class SellerProfileDeleteViewSet(viewsets.ModelViewSet):
     queryset = SellerProfile.objects.all()
     serializer_class = SellerProfileSerializer
-    permission_classes = [IsProfileOwnerOrSuperuser]
+    permission_classes = [IsAuthenticated,IsSellerProfileOwnerOrSuperuser]
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
