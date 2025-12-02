@@ -18,10 +18,13 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
             message ='This Phone Number is already in use.')]
     )
 
+    full_name = serializers.CharField(
+    )
+
     class Meta:
         model = CustomerProfile
         fields = "__all__"
-        read_only_fields = ('created_at', 'updated_at', 'is_verified', 'account')
+        read_only_fields = ('created_at', 'updated_at', 'is_verified', 'account', 'full_name')
 
 
     def validate_phone_number(self, value):
