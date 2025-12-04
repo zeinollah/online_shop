@@ -5,18 +5,19 @@ from datetime import date
 
 
 def validate_phone_number(value):
-    post_stripped = value.strip()
+    phone_number = value.strip()
 
-    if post_stripped:
-        if not post_stripped.isdigit():
+    if phone_number:
+
+        if not phone_number.isdigit():
             raise serializers.ValidationError(
                 "Phone number should be digits."
             )
-        if len(post_stripped) != 11:
+        if len(phone_number) != 11:
             raise serializers.ValidationError(
                 "Phone number should be 11 digit."
             )
-    return post_stripped
+    return phone_number
 
 
 

@@ -1,32 +1,23 @@
+from django.template.context_processors import request
 from rest_framework import serializers
-from .models import Order, OrderItem
+from utils.validators import validate_phone_number, validate_post_code
+from .models import Order
 
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    shipping_address = serializers.CharField(
-        required=True,
-        error_messages={
-            'required': 'Shipping Address is required and cannot be empty.',}
-    )
 
-    shipping_post_code = serializers.CharField(
-        required=True,
-        error_messages={
-            'required': 'Shipping Post Code is required and cannot be empty.',}
-    )
-
+    shipping_city = serializers.CharField(required=False)
+    shipping_address = serializers.CharField(required=False)
     shipping_phone = serializers.CharField(
-        required=True,
-        error_messages={
-            'required': 'Shipping Phone is required and cannot be empty.',}
+        required=False,
+        validators=[validate_phone_number]
+    )
+    shipping_postcode = serializers.CharField(
+        required=False,
+        validators=[validate_post_code]
     )
 
-    shipping_city = serializers.CharField(
-        required=True,
-        error_messages={
-            'required': 'Shipping City is required and cannot be empty.',}
-    )
 
     class Meta:
         model = Order
@@ -35,6 +26,51 @@ class OrderSerializer(serializers.ModelSerializer):
             'id', 'customer','order_number', 'total_price',
             'created_at', 'updated_at'
         )
+
+    def validate(self, attrs):
+        """
+        Get data for shipping fields from Customer Profile and validate the data.
+        """
+        customers = request.user.cutsomer_profile
+
+        if not attrs.get('shipping_city'):
+            if customers.city:
+                attrs['shipping_city'] = customers.city
+            raise serializers.ValidationError(
+                {"shipping_city": "Shipping city required."
+                "Please provide it or update your profile."}
+            )
+
+        if not attrs.get('shipping_address'):
+            if customers.address:
+                attrs['shipping_address'] = customers.address
+            raise serializers.ValidationError(
+                {"shipping_address": "Shipping address required."
+                 "Please provide it or update your profile."}
+            )
+
+        if not attrs.get('shipping_phone'):
+            if customers.phone_number:
+                attrs['shipping_phone'] = customers.phone_number
+            raise serializers.ValidationError(
+                {"shipping_phone": "Shipping phone required."
+                 "Please provide it or update your profile."}
+            )
+
+        if not attrs.get('shipping_postcode'):
+            if customers.post_code:
+                attrs['shipping_postcode'] = customers.post_code
+            raise serializers.ValidationError(
+                {"shipping_postcode": "Shipping postcode required."
+                 "Please provide it or update your profile."}
+            )
+
+        if not attrs.get('payment_method'):
+            raise serializers.ValidationError(
+                {"payment_method" : "Payment method required please choose from [Cash - Wallet - Credit Card]"}
+            )
+
+        return attrs
 
 
 
