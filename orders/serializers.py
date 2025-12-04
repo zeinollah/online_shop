@@ -1,4 +1,3 @@
-from django.template.context_processors import request
 from rest_framework import serializers
 from utils.validators import validate_phone_number, validate_post_code
 from .models import Order
@@ -31,7 +30,14 @@ class OrderSerializer(serializers.ModelSerializer):
         """
         Get data for shipping fields from Customer Profile and validate the data.
         """
-        customers = request.user.cutsomer_profile
+        request = self.context.get('request')
+        customers = request.user.customer_profile
+
+
+        if not hasattr(request.uesr , 'customer_profile'):
+            raise serializers.ValidationError(
+                {"detail": "Profile not find."},
+            )
 
         if not attrs.get('shipping_city'):
             if customers.city:
