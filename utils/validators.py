@@ -100,3 +100,37 @@ def validate_file_size(max_size=None, amount=None):
         return values
 
     return validate
+
+
+
+def validate_quantity(value):
+    if value <= 0 :
+        raise serializers.ValidationError(
+            {"quantity" : "Quantity can not be 0 or negative."}
+        )
+    return value
+
+
+
+def validate_product(value):
+    if not value.in_stock:
+        raise serializers.ValidationError(
+            {"product" : "Product is not in stock."}
+        )
+    return value
+
+
+
+def validate_discount(value, attrs):
+    total_price = attrs.get('total_price')
+    if value:
+        if value < 0 :
+            raise serializers.ValidationError(
+                "Discount can not be negative."
+            )
+
+        if value > total_price:
+            raise serializers.ValidationError(
+                {"discount" : "Discount cannot exceed total price"}
+            )
+    return value
