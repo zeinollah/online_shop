@@ -122,15 +122,9 @@ def validate_product(value):
 
 
 def validate_discount(value, attrs):
-    total_price = attrs.get('total_price')
-    if value:
+
         if value < 0 :
             raise serializers.ValidationError(
                 "Discount can not be negative."
             )
-
-        if value > total_price:
-            raise serializers.ValidationError(
-                {"discount" : "Discount cannot exceed total price"}
-            )
-    return value
+        return value
