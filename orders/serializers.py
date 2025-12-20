@@ -1,6 +1,10 @@
 from rest_framework import serializers
-from utils.validators import validate_phone_number, validate_post_code
-from .models import Order
+from utils.validators import (validate_phone_number,
+                              validate_post_code,
+                              validate_quantity,
+                              validate_discount,
+                              )
+from .models import Order, OrderItem
 
 
 
@@ -34,7 +38,7 @@ class OrderSerializer(serializers.ModelSerializer):
         customers = request.user.customer_profile
 
 
-        if not hasattr(request.uesr , 'customer_profile'):
+        if not hasattr(request.user , 'customer_profile'):
             raise serializers.ValidationError(
                 {"detail": "Profile not find."},
             )
@@ -109,5 +113,116 @@ class OrderUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     "order_status": "Cannot modify a cancelled order"
                 })
+
+        return attrs
+
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    customer = serializers.CharField(source = 'order.customer')
+    order_number = serializers.CharField(source = 'order.order_number')
+
+
+    class Meta:
+        model = OrderItem
+        fields = '__all__'
+        read_only_fields = [
+            'id', 'customer', 'order_number',
+            'product_name', 'store_name', 'quantity', 'price',
+            'discount', 'created_at', 'updated_at'
+        ]
+
+
+
+class OrderItemCreateSerializer(serializers.ModelSerializer):
+
+    quantity = serializers.IntegerField(
+        validators=[validate_quantity],
+        default=1,
+        )
+
+    class Meta:
+        model = OrderItem
+        fields = ['product', 'quantity']
+        read_only_fields = ['id', 'price', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        product = attrs.get('product')
+        order = attrs.get('order')
+
+        request = self.context.get('request')
+        if request and hasattr(request.uesr, 'customer_profile'):
+            if order.customer != request.user.customer_profile:
+                raise serializers.ValidationError({
+                    "Order" : "You can only add order for yourself"
+                })
+
+        if not product.in_stock :
+            raise serializers.ValidationError({
+                "Product" : "Product not in stock."
+            })
+
+
+        return attrs
+
+    def create(self, validated_data):
+        products = validated_data['product']
+        order = validated_data['order']
+
+        validated_data['product_name'] = products.name
+        validated_data['store_name'] = products.seller.store_name
+        validated_data['price'] = products.price
+
+        order_item = OrderItem.objects.create(**validated_data)
+        order.calculate_total()
+        return order_item
+
+
+
+class OrderItemUpdateSerializer(serializers.ModelSerializer):
+
+    quantity = serializers.CharField(
+        validators=[validate_quantity],
+        default=1,
+        )
+    discount = serializers.CharField(
+        validators=[validate_discount]
+    )
+
+    class Meta:
+        model = OrderItem
+        fields = ['product', 'quantity']
+        read_only_fields = ['id', 'price', 'created_at', 'updated_at']
+
+
+    def validate(self, attrs):
+
+        order = attrs.get('order')
+        product = attrs.get('product')
+        discount = attrs.get('discount', self.instance.discount)
+        quantity = attrs.get('quantity', self.instance.quantity)
+
+        request = self.context.get('request')
+        if request and hasattr(request.uesr, 'customer_profile'):
+            if order.customer != request.user.customer_profile:
+                raise serializers.ValidationError({
+                    "Order": "You can only add order for yourself"
+                })
+
+        if order.status != 'pending':
+            raise serializers.ValidationError({
+                "status": "Cannot add item to order are not pending."
+            })
+
+        if not product.in_stock :
+            raise serializers.ValidationError({
+                "Product" : "Product not in stock."
+            })
+
+        item_total = self.instance.price * quantity
+        if item_total < discount:
+            raise serializers.ValidationError({
+                "discount" : f"Discount cannot exceed item total of {item_total}."
+            })
 
         return attrs
