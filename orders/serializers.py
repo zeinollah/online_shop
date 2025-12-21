@@ -46,34 +46,38 @@ class OrderSerializer(serializers.ModelSerializer):
         if not attrs.get('shipping_city'):
             if customers.city:
                 attrs['shipping_city'] = customers.city
-            raise serializers.ValidationError(
-                {"shipping_city": "Shipping city required."
-                "Please provide it or update your profile."}
-            )
+            else:
+                raise serializers.ValidationError(
+                    {"shipping_city": "Shipping city required."
+                                "Please provide it or update your profile."}
+                    )
 
         if not attrs.get('shipping_address'):
             if customers.address:
                 attrs['shipping_address'] = customers.address
-            raise serializers.ValidationError(
-                {"shipping_address": "Shipping address required."
-                 "Please provide it or update your profile."}
-            )
+            else:
+                raise serializers.ValidationError(
+                    {"shipping_address": "Shipping address required."
+                                        "Please provide it or update your profile."}
+                    )
 
         if not attrs.get('shipping_phone'):
             if customers.phone_number:
                 attrs['shipping_phone'] = customers.phone_number
-            raise serializers.ValidationError(
-                {"shipping_phone": "Shipping phone required."
-                 "Please provide it or update your profile."}
-            )
+            else:
+                raise serializers.ValidationError(
+                     {"shipping_phone": "Shipping phone required."
+                                     "Please provide it or update your profile."}
+                    )
 
-        if not attrs.get('shipping_postcode'):
+        if not attrs.get('shipping_post_code'):
             if customers.post_code:
-                attrs['shipping_postcode'] = customers.post_code
-            raise serializers.ValidationError(
-                {"shipping_postcode": "Shipping postcode required."
-                 "Please provide it or update your profile."}
-            )
+                attrs['shipping_post_code'] = customers.post_code
+            else:
+                raise serializers.ValidationError(
+                    {"shipping_post_code": "Shipping post code required. "
+                                           "Please provide it or update your profile."}
+                )
 
         if not attrs.get('payment_method'):
             raise serializers.ValidationError(
@@ -151,7 +155,7 @@ class OrderItemCreateSerializer(serializers.ModelSerializer):
         order = attrs.get('order')
 
         request = self.context.get('request')
-        if request and hasattr(request.uesr, 'customer_profile'):
+        if request and hasattr(request.user, 'customer_profile'):
             if order.customer != request.user.customer_profile:
                 raise serializers.ValidationError({
                     "Order" : "You can only add order for yourself"
@@ -203,13 +207,13 @@ class OrderItemUpdateSerializer(serializers.ModelSerializer):
         quantity = attrs.get('quantity', self.instance.quantity)
 
         request = self.context.get('request')
-        if request and hasattr(request.uesr, 'customer_profile'):
+        if request and hasattr(request.user, 'customer_profile'):
             if order.customer != request.user.customer_profile:
                 raise serializers.ValidationError({
                     "Order": "You can only add order for yourself"
                 })
 
-        if order.status != 'pending':
+        if order.order_status != 'pending':
             raise serializers.ValidationError({
                 "status": "Cannot add item to order are not pending."
             })
