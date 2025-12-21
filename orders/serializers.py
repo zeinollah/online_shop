@@ -151,7 +151,7 @@ class OrderItemCreateSerializer(serializers.ModelSerializer):
         order = attrs.get('order')
 
         request = self.context.get('request')
-        if request and hasattr(request.uesr, 'customer_profile'):
+        if request and hasattr(request.user, 'customer_profile'):
             if order.customer != request.user.customer_profile:
                 raise serializers.ValidationError({
                     "Order" : "You can only add order for yourself"
@@ -203,7 +203,7 @@ class OrderItemUpdateSerializer(serializers.ModelSerializer):
         quantity = attrs.get('quantity', self.instance.quantity)
 
         request = self.context.get('request')
-        if request and hasattr(request.uesr, 'customer_profile'):
+        if request and hasattr(request.user, 'customer_profile'):
             if order.customer != request.user.customer_profile:
                 raise serializers.ValidationError({
                     "Order": "You can only add order for yourself"
