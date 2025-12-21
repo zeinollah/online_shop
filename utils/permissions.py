@@ -37,8 +37,16 @@ class IsOrderOwnerOrSuperuser(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         user = request.user
+
         if user.is_superuser or user.is_staff:
             return True
 
-        if hasattr(user, 'customer_profile'):
-            return obj.customer == user.customer_profile
+        if hasattr(obj, 'customer'):# for order
+            if hasattr(user, 'customer_profile'):
+                return obj.customer == user.customer_profile
+
+        if hasattr(obj, 'order'): # for order item
+            if hasattr(user, 'customer_profile'):
+                return obj.order.customer == user.customer_profile
+
+        return False
