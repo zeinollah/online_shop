@@ -16,7 +16,7 @@ class OrderSerializer(serializers.ModelSerializer):
         required=False,
         validators=[validate_phone_number]
     )
-    shipping_postcode = serializers.CharField(
+    shipping_post_code = serializers.CharField(
         required=False,
         validators=[validate_post_code]
     )
