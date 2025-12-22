@@ -128,7 +128,7 @@ class OrderItemInfoViewSet(viewsets.ReadOnlyModelViewSet):
         if user.is_superuser or user.is_staff:
             return OrderItem.objects.all()
         if hasattr(user, 'customer_profile'):
-            return Order.objects.filter(order__customer=user.customer_profile)
+            return OrderItem.objects.filter(order__customer=user.customer_profile)
 
         return False
 
@@ -144,9 +144,12 @@ class OrderItemUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        instance.order.calculate_total()
+
         return Response(
-            {"message": "Order Item updated."},
-        )
+            {"message": "Order Item updated.",
+             "item" : serializer.data
+        })
 
 
 
