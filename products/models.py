@@ -22,4 +22,4 @@ class Product(models.Model):
 
 
     def __str__(self):
-        return f"{self.slug} - {self.seller.store_name} "
+        return f"{self.name}"
