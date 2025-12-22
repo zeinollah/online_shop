@@ -104,6 +104,7 @@ def validate_file_size(max_size=None, amount=None):
 
 
 def validate_quantity(value):
+    value = int(value)
     if value <= 0 :
         raise serializers.ValidationError(
             {"quantity" : "Quantity can not be 0 or negative."}

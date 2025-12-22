@@ -7,7 +7,9 @@ from utils.validators import (validate_phone_number,
 from .models import Order, OrderItem
 
 
-
+"""
+Order Serializers 
+"""
 class OrderSerializer(serializers.ModelSerializer):
 
     shipping_city = serializers.CharField(required=False)
@@ -122,6 +124,9 @@ class OrderUpdateSerializer(serializers.ModelSerializer):
 
 
 
+"""
+Order Item Serializers
+"""
 class OrderItemSerializer(serializers.ModelSerializer):
     customer = serializers.CharField(source = 'order.customer')
     order_number = serializers.CharField(source = 'order.order_number')
@@ -147,7 +152,7 @@ class OrderItemCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['product', 'quantity']
+        fields = ['order', 'product', 'quantity', 'discount']
         read_only_fields = ['id', 'price', 'created_at', 'updated_at']
 
     def validate(self, attrs):
@@ -195,14 +200,14 @@ class OrderItemUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['product', 'quantity']
+        fields = ['product', 'quantity', 'price', 'discount']
         read_only_fields = ['id', 'price', 'created_at', 'updated_at']
 
 
     def validate(self, attrs):
 
-        order = attrs.get('order')
-        product = attrs.get('product')
+        order = self.instance.order
+        product = attrs.get('product', self.instance.product)
         discount = attrs.get('discount', self.instance.discount)
         quantity = attrs.get('quantity', self.instance.quantity)
 
@@ -215,7 +220,7 @@ class OrderItemUpdateSerializer(serializers.ModelSerializer):
 
         if order.order_status != 'pending':
             raise serializers.ValidationError({
-                "status": "Cannot add item to order are not pending."
+                "status": "Cannot update item in order are not in pending status."
             })
 
         if not product.in_stock :
@@ -223,7 +228,7 @@ class OrderItemUpdateSerializer(serializers.ModelSerializer):
                 "Product" : "Product not in stock."
             })
 
-        item_total = self.instance.price * quantity
+        item_total = self.instance.price * int(quantity)
         if item_total < discount:
             raise serializers.ValidationError({
                 "discount" : f"Discount cannot exceed item total of {item_total}."
