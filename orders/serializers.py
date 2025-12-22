@@ -130,6 +130,7 @@ Order Item Serializers
 class OrderItemSerializer(serializers.ModelSerializer):
     customer = serializers.CharField(source = 'order.customer')
     order_number = serializers.CharField(source = 'order.order_number')
+    subtotal = serializers.DecimalField(max_digits=10, decimal_places=3, read_only=True)
 
 
     class Meta:
@@ -138,7 +139,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id', 'customer', 'order_number',
             'product_name', 'store_name', 'quantity', 'price',
-            'discount', 'created_at', 'updated_at'
+            'subtotal', 'discount', 'created_at', 'updated_at'
         ]
 
 
