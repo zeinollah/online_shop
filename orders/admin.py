@@ -1,5 +1,7 @@
+from itertools import count
+
 from django.contrib import admin
-from .models import Order
+from .models import Order, OrderItem
 
 class OrderAdmin(admin.ModelAdmin):
     list_display = ["id", "customer", "order_number", "order_status",
@@ -14,4 +16,20 @@ class OrderAdmin(admin.ModelAdmin):
 
     ordering =["-created_at"]
 
+    readonly_fields = ['total_price']
+
 admin.site.register(Order, OrderAdmin)
+
+
+
+
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ["id", "order", "product_name",
+                    "store_name", "quantity", "price", "subtotal", "discount"]
+
+    # search_fields = ["order"]
+
+    ordering = ["-created_at"]
+
+
+admin.site.register(OrderItem, OrderItemAdmin)
