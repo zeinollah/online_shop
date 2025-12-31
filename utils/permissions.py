@@ -15,10 +15,12 @@ class IsSellerProfileOwnerOrSuperuser(permissions.BasePermission):
         return obj.account == user
 
 
+
 class IsCustomerProfileOwnerOrSuperuser(permissions.BasePermission):
     """
     This class check the user before all actions to make sure user is admin or owner for customer.
     """
+
     message = 'You DO NOT have permission to do this action.'
 
     def has_object_permission(self, request, view, obj):
@@ -26,6 +28,7 @@ class IsCustomerProfileOwnerOrSuperuser(permissions.BasePermission):
         if user.is_superuser or user.is_staff:
             return True
         return obj.account == user
+
 
 
 class IsOrderOwnerOrSuperuser(permissions.BasePermission):
@@ -50,3 +53,23 @@ class IsOrderOwnerOrSuperuser(permissions.BasePermission):
                 return obj.order.customer == user.customer_profile
 
         return False
+
+
+
+class IsDiscountOwnerOrSuperuser(permissions.BasePermission):
+    """
+    Make sure each seller can access to their discount code not another.
+    """
+
+    message = 'You DO NOT access to this discount.'
+
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if user.is_superuser or user.is_staff:
+            return True
+
+        if hasattr(obj, 'seller'):
+            if hasattr(user, 'seller_profile'):
+                return obj.seller == user.seller_profile
+
+        return True
