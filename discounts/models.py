@@ -40,7 +40,6 @@ class BaseDiscount(models.Model):
     updated_at = models.DateTimeField(_('updated at'), auto_now=True)
 
     class Meta:
-        # abstract = True
         ordering = ('-created_at',)
 
     def __str__(self):
