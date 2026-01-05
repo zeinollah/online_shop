@@ -71,5 +71,6 @@ class IsDiscountOwnerOrSuperuser(permissions.BasePermission):
         if hasattr(obj, 'seller'):
             if hasattr(user, 'seller_profile'):
                 return obj.seller == user.seller_profile
+            return False
 
-        return True
+        return False
