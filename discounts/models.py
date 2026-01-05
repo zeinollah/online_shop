@@ -82,6 +82,7 @@ class DiscountUsage(models.Model):
     discount_amount = models.DecimalField(_("Discount amount"), max_digits=10, decimal_places=2)
     used_at = models.DateTimeField(_('used at'), auto_now_add=True)
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
 
     class Meta:
         ordering = ('-created_at',)
