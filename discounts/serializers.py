@@ -129,3 +129,32 @@ class SellerDiscountUpdateSerializer(serializers.ModelSerializer):
                 )
 
         return attrs
+
+
+
+"""
+Site Discount Serializers
+"""
+class SiteDiscountListSerializer(serializers.ModelSerializer):
+    customer_name = serializers.CharField(source='target_customer.full_name', read_only=True)
+    product_name = serializers.CharField(source='target_product.name', read_only=True)
+    used_by_name = serializers.CharField(source='used_by.full_name', read_only=True)
+
+    class Meta:
+        model = SiteDiscount
+        fields = [
+            'id', 'code', 'name', 'discount_type', 'scope_type',
+            'value', 'is_active', 'start_date', 'end_date',
+            'is_used', 'used_by_name', 'used_at',
+            'target_customer', 'customer_name',
+            'target_product', 'product_name',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'code', 'name', 'discount_type', 'scope_type',
+            'value', 'is_active', 'start_date', 'end_date',
+            'is_used', 'used_by_name', 'used_at',
+            'target_customer', 'customer_name',
+            'target_product', 'product_name',
+            'created_at', 'updated_at'
+        ]
