@@ -162,12 +162,16 @@ def validate_discount_value(discount_type, value):
             raise serializers.ValidationError(
                 {"Discount value" : "Discount value must be between 0 and 100."}
             )
+        return int(value)
 
     if discount_type == 'fixed_amount':
         if value <= 0 :
             raise serializers.ValidationError(
                 {"Discount value" : "Discount value must be greater than 0."}
             )
+    print(f"Discount type is {discount_type}")
+    print(f"Discount value : {value}")
+
 
     return value
 
@@ -184,4 +188,16 @@ def validate_scope_type(scope_type, target_product, target_customer):
         if not target_customer:
             raise serializers.ValidationError(
                 {"target_customer" : f"Target customer must set for ({scope_type})"}
+            )
+
+    if scope_type in ["all_customers_all_products", "specific_customer_all_products"]:
+        if target_product:
+            raise serializers.ValidationError(
+                {"target_product" : f"You can not set target product for ({scope_type}) discount"}
+            )
+
+    if scope_type in ["all_customers_specific_products", "all_customers_all_products"]:
+        if target_customer:
+            raise serializers.ValidationError(
+                {"target_customer" : f"You can not set target customer for ({scope_type}) discount"}
             )
