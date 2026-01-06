@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from django.template.defaultfilters import filesizeformat
-from discounts.models import SellerDiscount, SiteDiscount
 from datetime import date
 
 
@@ -134,39 +133,23 @@ def validate_discount(value, attrs):
 
 
 
-
 """
 Validation Discount fields
 """
-def validate_discount_usage_time(start_date, end_date):
-    """
-    Make sure customer can not use discount code before start date or after end date.
-    """
-
-    today = date.today()
-
-    if today < start_date :
-        raise serializers.ValidationError(
-            {"Start date" :  "Discount not is available yet,"
-                           f"you can use it from {start_date}"}
-        )
-
-    if today > end_date :
-        raise serializers.ValidationError(
-            {"End date" : f"Discount is expired on {end_date}"}
-        )
-
-    return True
-
-
 def validate_discount_create_time(start_date, end_date):
     """
     Check dates to be sure admin or seller can not make discount code with wrong dates.
     """
+    today = date.today()
 
-    if start_date >= end_date :
+    if start_date > end_date:
         raise serializers.ValidationError(
-            {"Date" : "End date must be after start date."}
+            {"Date" : "End Date can not before start date"}
+        )
+
+    if start_date < today:
+        raise serializers.ValidationError(
+            {"Date" : "Start Date can not be less than today."}
         )
 
     return True
@@ -175,7 +158,7 @@ def validate_discount_create_time(start_date, end_date):
 def validate_discount_value(discount_type, value):
 
     if discount_type == 'percentage':
-        if value > 100 or value <= 0  :
+        if value >= 100 or value <= 0:
             raise serializers.ValidationError(
                 {"Discount value" : "Discount value must be between 0 and 100."}
             )
@@ -189,68 +172,16 @@ def validate_discount_value(discount_type, value):
     return value
 
 
-def validate_customer_eligibility(discount):
+def validate_scope_type(scope_type, target_product, target_customer):
 
-    scope_type = discount.scope_type
-
-    if scope_type in ["specific_customer_all_products", "specific_customer_specific_products"]:
-        if not discount.target_customer:
+    if scope_type in ['all_customers_specific_products', 'specific_customer_specific_products']:
+        if not target_product:
             raise serializers.ValidationError(
-                {"target_customer" : f"Target customer must be set for this type of discount({scope_type})."}
+                {"target_product" : f"Target product must set for ({scope_type})"}
             )
 
-    return discount
-
-
-def validate_product_eligibility(discount, order):
-
-    target_product_id = discount.target_product.id
-    target_product = discount.target_product
-
-    eligible_items = []
-
-    # Site Discount Check -------------------------------------------------------
-    if isinstance(discount, SiteDiscount):
-        if discount.scope_type in ['all_customers_specific_products', 'specific_customer_specific_products']:
-            for item in order.order_items.all():
-                if item.product.id == target_product_id and item not in eligible_items:
-                    eligible_items.append(item)
-
-
-        if discount.scope_type in ['all_customers_all_products', 'specific_customer_all_products']:
-            eligible_items = list(order.order_items.all())
-
-
-    # Seller Discount Check -----------------------------------------------------
-    if isinstance(discount, SellerDiscount):
-        seller = discount.seller
-
-        if discount.scope_type in ['all_customers_all_products', 'specific_customer_all_products']:
-            for item in order.order_items.all():
-                if item.product.seller == seller:
-                    eligible_items.append(item)
-
-        if discount.scope_type in ['all_customers_specific_products', 'specific_customer_specific_products']:
-            for item in order.order_items.all():
-                if item.product.seller == seller and item.product.id == target_product_id:
-                    eligible_items.append(item)
-
-        if target_product:
-            if seller != discount.seller :
-                raise serializers.ValidationError(
-                    {"target_product": f"Product ({target_product}) does not belong to your shop"}
-                )
-
-
-
-    # Check the items -----------------------------------------------------------
-    elif not eligible_items:
-        raise serializers.ValidationError(
-           {"No items in your order are eligible for this discount"}
-        )
-
-    return eligible_items
-
-
-def validate_no_overlap(discount_data, discount_id=None, ):
-    pass
+    if scope_type in ['specific_customer_all_products', 'specific_customer_specific_products']:
+        if not target_customer:
+            raise serializers.ValidationError(
+                {"target_customer" : f"Target customer must set for ({scope_type})"}
+            )

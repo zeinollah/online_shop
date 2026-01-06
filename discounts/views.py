@@ -4,15 +4,9 @@ from rest_framework.response import Response
 from utils.permissions import IsDiscountOwnerOrSuperuser
 from .models import SellerDiscount
 from .serializers import (
+    SellerDiscountListSerializer,
     SellerDiscountCreateSerializer,
     SellerDiscountUpdateSerializer,
-    SellerDiscountListSerializer,
-    SiteDiscountCreateSerializer,
-    SiteDiscountUpdateSerializer,
-    SiteDiscountListSerializer,
-    DiscountApplySerializer,
-    DiscountRemoveSerializer,
-    DiscountUsageListSerializer,
     )
 
 
@@ -62,16 +56,31 @@ class SellerDiscountInfoViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class SellerDiscountUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
-    pass
+    queryset = SellerDiscount.objects.all()
+    serializer_class = SellerDiscountUpdateSerializer
+    permission_classes = [IsAuthenticated, IsDiscountOwnerOrSuperuser]
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "message": "Your Discount has been updated successfully",
+            "data": serializer.data},
+            status=status.HTTP_200_OK
+        )
 
 
 
-class SellerDiscountRemoveViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    pass
+class SellerDiscountDeleteViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = SellerDiscount.objects.all()
+    serializer_class = SellerDiscountUpdateSerializer
+    permission_classes = [IsAuthenticated, IsDiscountOwnerOrSuperuser]
 
-
-
-
-"""
-Site Discount Views 
-"""
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response({
+            "message": "Your Discount has been deleted successfully",
+        })

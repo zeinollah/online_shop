@@ -35,6 +35,7 @@ class BaseDiscount(models.Model):
     used_at = models.DateTimeField(_('used at'), null=True, blank=True)
     start_date = models.DateField(_('start day'), null=True, blank=True)
     end_date = models.DateField(_('end day'), null=True, blank=True)
+    used_by = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='used_by', null=True, blank=True)
     is_active = models.BooleanField(_('is active'), default=True)
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
     updated_at = models.DateTimeField(_('updated at'), auto_now=True)
@@ -81,6 +82,7 @@ class DiscountUsage(models.Model):
     discount_amount = models.DecimalField(_("Discount amount"), max_digits=10, decimal_places=2)
     used_at = models.DateTimeField(_('used at'), auto_now_add=True)
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
 
     class Meta:
         ordering = ('-created_at',)
