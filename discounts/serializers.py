@@ -32,11 +32,11 @@ class SellerDiscountListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             'id', 'code', 'name', 'discount_type', 'value',
-            'scope_type', 'is_active', 'is_used', 'used_at',
+            'scope_type', 'is_active', 'is_used', 'used_by', 'used_by_name', 'used_at',
             'start_date', 'end_date',
-            'seller_name', 'target_customer_name',
-            'target_product_name',
-            'created_at', 'updated_at',
+            'seller_name',
+            'target_product_name', 'target_customer_name',
+            'created_at', 'updated_at'
         ]
 
 
