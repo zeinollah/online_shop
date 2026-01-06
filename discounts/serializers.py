@@ -98,9 +98,18 @@ class SellerDiscountUpdateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
 
         # Use the utils/validators function ---------------------------------
-        validate_discount_create_time(attrs['start_date'], attrs['end_date'])
-        validate_discount_value(attrs['discount_type'], attrs['value'])
-        validate_scope_type(attrs['scope_type'], attrs['target_product'], attrs['target_customer'])
+        discount_type = attrs.get('discount_type', self.instance.discount_type)
+        value = attrs.get('value', self.instance.value)
+        validate_discount_value(discount_type, value)
+
+        start_date = attrs.get('start_date', self.instance.start_date)
+        end_date = attrs.get('end_date', self.instance.end_date)
+        validate_discount_create_time(start_date, end_date)
+
+        scope_type = attrs.get('scope_type', self.instance.scope_type)
+        target_customer = attrs.get('target_customer', self.instance.target_customer)
+        target_product = attrs.get('target_product', self.instance.target_product)
+        validate_scope_type(scope_type, target_customer, target_product)
 
         # Local Validation --------------------------------------------------
         if self.instance.is_used:
@@ -117,3 +126,5 @@ class SellerDiscountUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"ownership" : f"Product ({target_product.name}) dose not belong to your shop "}
                 )
+
+        return attrs
