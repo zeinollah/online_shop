@@ -3,10 +3,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from utils.permissions import IsDiscountOwnerOrSuperuser
 from .models import SellerDiscount, SiteDiscount
+from rest_framework.exceptions import PermissionDenied
 from .serializers import (
     SellerDiscountListSerializer,
     SellerDiscountCreateSerializer,
-    SellerDiscountUpdateSerializer, SiteDiscountCreateSerializer,
+    SellerDiscountUpdateSerializer, SiteDiscountCreateSerializer, SiteDiscountListSerializer,
 )
 
 
@@ -109,3 +110,16 @@ class SiteDiscountCreateViewSet(viewsets.ModelViewSet):
         },
              status=status.HTTP_201_CREATED
         )
+
+
+class SiteDiscountInfoViewSet(viewsets.ModelViewSet):
+    queryset = SiteDiscount.objects.all()
+    serializer_class = SiteDiscountListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.is_staff:
+            return SiteDiscount.objects.all()
+        else:
+            raise PermissionDenied
