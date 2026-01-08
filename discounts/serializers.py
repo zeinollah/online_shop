@@ -158,3 +158,36 @@ class SiteDiscountListSerializer(serializers.ModelSerializer):
             'target_product', 'product_name',
             'created_at', 'updated_at'
         ]
+
+
+class SiteDiscountCreateSerializer(serializers.ModelSerializer):
+    code = serializers.CharField(validators=[
+        UniqueValidator(
+            queryset=SiteDiscount.objects.all(),
+            message='Code already exists'
+        )
+    ])
+
+    class Meta:
+          model = SiteDiscount
+          fields = [
+                "code", "name", "discount_type", "value",
+                "scope_type", "start_date",
+                "end_date", "is_active",
+                "target_customer", "target_product",
+          ]
+          read_only_fields = [
+             "created_at", "updated_at"
+          ]
+
+
+
+    def validate(self, attrs=None):
+
+        # Use the utils/validators function ----------------------------------
+        validate_discount_create_time(attrs['start_date'], attrs['end_date'])
+        validate_discount_value(attrs['discount_type'], attrs['value'])
+        validate_scope_type(attrs['scope_type'], attrs.get('target_product'), attrs.get('target_customer'))
+
+        return attrs
+
