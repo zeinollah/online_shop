@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status, mixins
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from utils.permissions import IsDiscountOwnerOrSuperuser
 from .models import SellerDiscount, SiteDiscount
@@ -135,6 +135,7 @@ class SiteDiscountUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet
         if not (request.user.is_superuser or request.user.is_staff):
             return Response(
                 {"message" : "Only Admin can update site discounts"},
+                status=status.HTTP_403_FORBIDDEN
             )
 
         instance = self.get_object()
@@ -147,3 +148,24 @@ class SiteDiscountUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet
             "data": serializer.data},
             status=status.HTTP_200_OK
         )
+
+
+class SiteDiscountDeleteViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = SiteDiscount.objects.all()
+    serializer_class = SiteDiscountUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        if not (request.user.is_superuser or request.user.is_staff):
+            return Response(
+                {"message" : "Only Admin can delete site discounts"},
+                status=status.HTTP_403_FORBIDDEN
+
+            )
+        instance = self.get_object()
+        instance.delete()
+        return Response({
+            "message": "Your Discount has been deleted successfully"},
+            status=status.HTTP_200_OK
+        )
+

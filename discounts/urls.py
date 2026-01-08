@@ -7,7 +7,8 @@ from .views import (
     SiteDiscountCreateViewSet,
     SiteDiscountInfoViewSet,
     SiteDiscountUpdateViewSet,
-)
+    SiteDiscountDeleteViewSet,
+    )
 
 router = DefaultRouter()
 
@@ -19,5 +20,6 @@ router.register('delete-seller-discount', SellerDiscountDeleteViewSet, basename=
 router.register('site-discount-info', SiteDiscountInfoViewSet, basename='site_discount_info') # Site Urls
 router.register('create-site-discount', SiteDiscountCreateViewSet, basename='create_site_discount')
 router.register('update-site-discount', SiteDiscountUpdateViewSet, basename='update_site_discount')
+router.register('delete-site-discount', SiteDiscountDeleteViewSet, basename='delete_site_discount')
 
 urlpatterns = router.urls
