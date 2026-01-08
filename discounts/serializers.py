@@ -191,3 +191,42 @@ class SiteDiscountCreateSerializer(serializers.ModelSerializer):
 
         return attrs
 
+
+class SiteDiscountUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SiteDiscount
+        fields = [
+            'name', 'discount_type', 'value',
+            'is_active', 'start_date', 'end_date', 'scope_type',
+            'target_customer', 'target_product'
+        ]
+        read_only_fields = [
+            'code',
+            'is_used', 'used_by', 'used_at',
+            'created_at', 'updated_at'
+        ]
+
+    def validate(self, attrs):
+
+        # Use the utils/validators function ----------------------------------
+        discount_type = attrs.get('discount_type', self.instance.discount_type)
+        value = attrs.get('value', self.instance.value)
+        validate_discount_value(discount_type, value)
+
+        start_date = attrs.get('start_date', self.instance.start_date)
+        end_date = attrs.get('end_date', self.instance.end_date)
+        validate_discount_create_time(start_date, end_date)
+
+        scope_type = attrs.get('scope_type', self.instance.scope_type)
+        target_customer = attrs.get('target_customer', self.instance.target_customer)
+        target_product = attrs.get('target_product', self.instance.target_product)
+        validate_scope_type(scope_type, target_product, target_customer)
+
+        # Local Validation ---------------------------------------------------
+        if self.instance.is_used:
+            raise serializers.ValidationError(
+                {"is_used" : "Can not updated discount code already used "}
+            )
+
+        return attrs

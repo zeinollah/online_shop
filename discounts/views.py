@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status, mixins
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from utils.permissions import IsDiscountOwnerOrSuperuser
 from .models import SellerDiscount, SiteDiscount
@@ -8,6 +8,7 @@ from .serializers import (
     SellerDiscountListSerializer,
     SellerDiscountCreateSerializer,
     SellerDiscountUpdateSerializer, SiteDiscountCreateSerializer, SiteDiscountListSerializer,
+    SiteDiscountUpdateSerializer,
 )
 
 
@@ -112,7 +113,7 @@ class SiteDiscountCreateViewSet(viewsets.ModelViewSet):
         )
 
 
-class SiteDiscountInfoViewSet(viewsets.ModelViewSet):
+class SiteDiscountInfoViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SiteDiscount.objects.all()
     serializer_class = SiteDiscountListSerializer
     permission_classes = [IsAuthenticated]
@@ -123,3 +124,26 @@ class SiteDiscountInfoViewSet(viewsets.ModelViewSet):
             return SiteDiscount.objects.all()
         else:
             raise PermissionDenied
+
+
+class SiteDiscountUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    queryset = SiteDiscount.objects.all()
+    serializer_class = SiteDiscountUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        if not (request.user.is_superuser or request.user.is_staff):
+            return Response(
+                {"message" : "Only Admin can update site discounts"},
+            )
+
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({
+            "message": "Your Discount has been updated successfully",
+            "data": serializer.data},
+            status=status.HTTP_200_OK
+        )
