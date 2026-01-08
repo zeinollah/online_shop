@@ -157,6 +157,11 @@ def validate_discount_create_time(start_date, end_date):
 
 def validate_discount_value(discount_type, value):
 
+    if not value:
+        raise serializers.ValidationError(
+            {"value" : "Discount value can not be empty"}
+        )
+
     if discount_type == 'percentage':
         if value >= 100 or value <= 0:
             raise serializers.ValidationError(
@@ -169,8 +174,6 @@ def validate_discount_value(discount_type, value):
             raise serializers.ValidationError(
                 {"Discount value" : "Discount value must be greater than 0."}
             )
-    print(f"Discount type is {discount_type}")
-    print(f"Discount value : {value}")
 
 
     return value
