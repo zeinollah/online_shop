@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status, mixins
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated ,IsAdminUser
 from rest_framework.response import Response
 from utils.permissions import IsDiscountOwnerOrSuperuser
 from .models import SellerDiscount, SiteDiscount, DiscountUsage
@@ -12,6 +12,7 @@ from .serializers import (
     SiteDiscountListSerializer,
     SiteDiscountUpdateSerializer,
     DiscountApplySerializer,
+    DiscountUsageListSerializer,
 )
 
 
@@ -176,6 +177,14 @@ class SiteDiscountDeleteViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSe
 """
 Usage Discount views
 """
+class DiscountUsageListViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = DiscountUsage.objects.all()
+    serializer_class = DiscountUsageListSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        return DiscountUsage.objects.all()
+
 class DiscountApplyViewSet(viewsets.GenericViewSet):
     serializer_class = DiscountApplySerializer
     permission_classes = [IsAuthenticated]
