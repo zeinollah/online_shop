@@ -9,6 +9,7 @@ from .views import (
     SiteDiscountUpdateViewSet,
     SiteDiscountDeleteViewSet,
     DiscountApplyViewSet,
+    DiscountUsageListViewSet,
     )
 
 router = DefaultRouter()
@@ -25,6 +26,7 @@ router.register('update-site-discount', SiteDiscountUpdateViewSet, basename='upd
 router.register('delete-site-discount', SiteDiscountDeleteViewSet, basename='delete_site_discount')
 
 """Discount Usage Urls"""
+router.register('discount-usage', DiscountUsageListViewSet, basename='discount_usage')
 router.register('apply-discount', DiscountApplyViewSet, basename='apply_discount')
 
 
