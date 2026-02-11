@@ -58,7 +58,7 @@ class SellerDiscount(BaseDiscount):
         ordering = ('-created_at',)
 
     def __str__(self):
-        return f"{self.seller} - {self.name} - {self.code}"
+        return f"{self.name} - {self.code}"
 
 
 
@@ -89,7 +89,7 @@ class DiscountUsage(models.Model):
         ordering = ('-created_at',)
 
     def __str__(self):
-        return f"{self.discount_code} used by {self.customer.full_name} on {self.used_at.strftime('%Y-%m-%d')}"
+        return f"{self.discount_code}"
 
     @property
     def discount_owner(self):
