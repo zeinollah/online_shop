@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import SellerDiscount, SiteDiscount
+from .models import (
+    SellerDiscount,
+    SiteDiscount,
+    DiscountUsage,
+)
 
 
 class SellerDiscountAdmin(admin.ModelAdmin):
@@ -30,7 +34,6 @@ admin.site.register(SellerDiscount, SellerDiscountAdmin)
 
 
 
-
 class SiteDiscountAdmin(admin.ModelAdmin):
     list_display = [
         'code', 'name',
@@ -49,4 +52,29 @@ class SiteDiscountAdmin(admin.ModelAdmin):
         'code', 'name',
     ]
 
+
+    #TODO : Return the store name target product belong
+
 admin.site.register(SiteDiscount, SiteDiscountAdmin)
+
+
+class DiscountUsageAdmin(admin.ModelAdmin):
+    list_display = [
+        "discount_owner" , "discount_code", "discount_type",
+        "discount_value", "discount_amount", "used_by",
+        "order", "order_item",
+        "used_at", "created_at", "updated_at",
+    ]
+
+    list_filter = [
+        "seller_discount", "site_discount",
+        "discount_type"
+    ]
+
+    search_fields = [
+        "discount_code", "discount_type",
+    ]
+
+    def used_by(self,obj):
+        return f"{obj.customer}"
+admin.site.register(DiscountUsage, DiscountUsageAdmin)
