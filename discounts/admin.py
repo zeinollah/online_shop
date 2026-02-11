@@ -60,7 +60,7 @@ admin.site.register(SiteDiscount, SiteDiscountAdmin)
 
 class DiscountUsageAdmin(admin.ModelAdmin):
     list_display = [
-        "discount_owner" , "discount_code", "discount_type",
+        "id", "discount_owner", "discount_code", "discount_type",
         "discount_value", "discount_amount", "used_by",
         "order", "order_item",
         "used_at", "created_at", "updated_at",
