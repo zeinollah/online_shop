@@ -239,6 +239,40 @@ class SiteDiscountUpdateSerializer(serializers.ModelSerializer):
 """
 Discount Usage Serializers
 """
+class DiscountUsageListSerializer(serializers.ModelSerializer):
+    customer_name = serializers.CharField(source='customer.full_name', read_only=True)
+    order_number = serializers.CharField(source='order.order_number', read_only=True)
+    product_name = serializers.CharField(source='order_item.product_name', read_only=True)
+    discount_owner = serializers.CharField(read_only=True)
+    scope_type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DiscountUsage
+        fields = [
+            'id', 'discount_code', 'discount_type', 'scope_type',
+            'discount_value',
+            'discount_amount', 'customer', 'customer_name',
+            'order', 'order_number', 'order_item', 'product_name',
+            'discount_owner', 'used_at', 'created_at'
+        ]
+        read_only_fields = [
+            'id', 'discount_code', 'discount_type', 'scope_type',
+            'discount_value',
+            'discount_amount', 'customer', 'customer_name',
+            'order', 'order_number', 'order_item', 'product_name',
+            'discount_owner', 'used_at', 'created_at'
+        ]
+
+    def get_scope_type(self, obj):
+        if obj.seller_discount:
+            return obj.seller_discount.scope_type
+
+        if obj.site_discount:
+            return obj.site_discount.scope_type
+
+        return None
+
+
 class DiscountApplySerializer(serializers.Serializer):
     discount_code = serializers.CharField()
     order_item_id = serializers.IntegerField()
