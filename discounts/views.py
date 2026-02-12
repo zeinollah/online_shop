@@ -1,7 +1,9 @@
 from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticated ,IsAdminUser
 from rest_framework.response import Response
-from utils.permissions import IsDiscountOwnerOrSuperuser
+from rest_framework.viewsets import GenericViewSet
+from decimal import Decimal
+from utils.permissions import IsDiscountOwnerOrSuperuser, IsOrderOwnerOrSuperuser
 from .models import SellerDiscount, SiteDiscount, DiscountUsage
 from rest_framework.exceptions import PermissionDenied
 from .serializers import (
@@ -13,6 +15,7 @@ from .serializers import (
     SiteDiscountUpdateSerializer,
     DiscountApplySerializer,
     DiscountUsageListSerializer,
+    DiscountRemoveSerializer,
 )
 
 
@@ -185,9 +188,10 @@ class DiscountUsageListViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return DiscountUsage.objects.all()
 
+
 class DiscountApplyViewSet(viewsets.GenericViewSet):
     serializer_class = DiscountApplySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOrderOwnerOrSuperuser]
 
 
     def create(self, request, *args, **kwargs):
@@ -239,5 +243,39 @@ class DiscountApplyViewSet(viewsets.GenericViewSet):
             "order_item_id": discount_usage.order_item.id,
             "new_subtotal": str(order_item.subtotal)
             },
+            status=status.HTTP_200_OK
+        )
+
+
+class DiscountRemoveViewSet(viewsets.GenericViewSet):
+    serializer_class = DiscountRemoveSerializer
+    permission_classes = [IsAuthenticated, IsOrderOwnerOrSuperuser]
+
+    def create(self, request, *args, **kwargs):
+        if not hasattr(request.user, 'customer_profile'):
+            return Response(
+                {"message": "Customer profile required."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        order_item = serializer.validated_data['order_item']
+        discount_usage = serializer.validated_data['discount_usage']
+        discount = discount_usage.seller_discount or discount_usage.site_discount or None
+        order_item.discount = Decimal(0)
+        order_item.save()
+
+        discount.is_used = False
+        discount.used_by = None
+        discount.save()
+
+        discount_usage.delete()
+
+        order_item.order.calculate_total()
+
+        return Response(
+            {"message": "Discount has been removed successfully"},
             status=status.HTTP_200_OK
         )
