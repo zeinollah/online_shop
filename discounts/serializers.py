@@ -3,6 +3,7 @@ from rest_framework.validators import UniqueValidator
 
 from customers.models import CustomerProfile
 from orders.models import OrderItem
+from orders.serializers import OrderItemSerializer
 from .models import SellerDiscount, SiteDiscount, DiscountUsage
 from products.models import Product
 from datetime import date
@@ -380,3 +381,41 @@ class DiscountApplySerializer(serializers.Serializer):
 
         return attrs
 
+
+class DiscountRemoveSerializer(serializers.Serializer):
+    order_item = serializers.IntegerField()
+
+    def validate_order_item(self, value):
+        try:
+            order_item= OrderItem.objects.get(id=value)
+            return order_item
+        except OrderItem.DoesNotExist:
+            raise serializers.ValidationError({
+                "order_item_id" : "OrderItem does not exist"
+            })
+
+    def validate(self, attrs):
+        order_item = attrs['order_item']
+        request = self.context.get('request')
+        customer = request.user.customer_profile
+        print(f"order item = {order_item}")
+
+        if order_item.order.customer != customer:
+            raise serializers.ValidationError({
+                "order_item" : "You can only remove discounts from your own orders"
+            })
+
+        if order_item.order.order_status != 'pending':
+            raise serializers.ValidationError({
+                "order_item" : "You can only remove discounts from pending orders"
+            })
+
+        discount_usage = DiscountUsage.objects.filter(order_item=order_item).first()
+        if not discount_usage:
+            raise serializers.ValidationError({
+                "detail" : "No discount applied for this order"
+            })
+
+        attrs['discount_usage'] = discount_usage
+
+        return attrs
