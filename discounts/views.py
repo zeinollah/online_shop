@@ -249,9 +249,10 @@ class DiscountApplyViewSet(viewsets.GenericViewSet):
 
         return Response({
             "message": "Discount applied successfully.",
+            "order_item_id": discount_usage.order_item.id,
+            "item_price": str(order_item.price),
             "discount_code": discount_usage.discount_code,
             "discount_amount": str(discount_usage.discount_amount),
-            "order_item_id": discount_usage.order_item.id,
             "new_subtotal": str(order_item.subtotal)
             },
             status=status.HTTP_200_OK
