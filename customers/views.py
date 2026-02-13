@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -38,6 +39,9 @@ class CustomerProfileInfoViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CustomerProfile.objects.all()
     serializer_class = CustomerProfileSerializer
     permission_classes = [IsAuthenticated,IsCustomerProfileOwnerOrSuperuser]
+    filterset_fields = ['city', 'gender', 'is_verified']
+    search_fields = ['$account__email', 'account__first_name', 'account__last_name', 'phone_number']
+    ordering_fields = ['created_at', 'city', 'gender']
 
     def get_queryset(self):
         user = self.request.user

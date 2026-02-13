@@ -38,6 +38,10 @@ class SellerProfileViewSet(viewsets.ModelViewSet):
 class SellerProfileInfoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SellerProfileSerializer
     permission_classes = [IsAuthenticated,IsSellerProfileOwnerOrSuperuser]
+    filterset_fields = ['city', 'physical_store', 'is_verified']
+    search_fields = ['$account__email', 'city', '$store_name']
+    ordering_fields = ['created_at', 'store_name']
+
 
     def get_queryset(self):
         user = self.request.user

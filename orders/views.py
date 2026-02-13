@@ -42,6 +42,9 @@ class OrderInfoViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated,IsOrderOwnerOrSuperuser]
+    filterset_fields = ['order_status', 'shipping_city', 'payment_method', 'is_paid']
+    search_fields = ['order_number', 'shipping_city', 'shipping_address']
+    ordering_fields = ['created_at', 'order_status']
 
     def get_queryset(self):
         user = self.request.user
@@ -122,6 +125,9 @@ class OrderItemCreateViewSet(viewsets.ModelViewSet):
 class OrderItemInfoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = OrderItemSerializer
     permission_classes = [IsAuthenticated,IsOrderOwnerOrSuperuser]
+    filterset_fields = ['order__order_status', 'store_name']
+    search_fields = ['product_name', 'store_name']
+    ordering_fields = ['created_at', 'price', 'quantity']
 
     def get_queryset(self):
         user = self.request.user

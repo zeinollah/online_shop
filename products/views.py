@@ -1,6 +1,5 @@
-from django.template.context_processors import request
 from rest_framework import viewsets, status, mixins
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from utils.permissions import IsSellerProfileOwnerOrSuperuser
@@ -29,6 +28,10 @@ class ProductDetailViewSet(ReadOnlyModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes =[IsAuthenticated, IsSellerProfileOwnerOrSuperuser]
+
+    filterset_fields = ['category', 'in_stock', 'seller__city']
+    search_fields = ['$name', '$description', '$seller__store_name']
+    ordering_fields = ['created_at', 'price', 'category']
 
     def get_queryset(self):
         user = self.request.user

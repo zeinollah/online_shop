@@ -49,6 +49,9 @@ class SellerDiscountInfoViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SellerDiscount.objects.all()
     serializer_class = SellerDiscountListSerializer
     permission_classes = [IsAuthenticated, IsDiscountOwnerOrSuperuser]
+    filterset_fields = ['is_active', 'is_used', 'discount_type', 'scope_type']
+    search_fields = ['code', 'name']
+    ordering_fields = ['created_at', 'end_date', 'value']
 
     def get_queryset(self):
         user = self.request.user
@@ -184,6 +187,14 @@ class DiscountUsageListViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DiscountUsage.objects.all()
     serializer_class = DiscountUsageListSerializer
     permission_classes = [IsAuthenticated]
+
+    filterset_fields = ['discount_type', 'seller_discount', 'site_discount' ]
+    search_fields = [
+        'customer__account__first_name',
+        'customer__account__last_name',
+        'discount_code',
+         ]
+    ordering_fields = ['created_at', 'used_at', 'discount_type']
 
     def get_queryset(self):
         user = self.request.user
