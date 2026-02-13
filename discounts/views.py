@@ -183,10 +183,21 @@ Usage Discount views
 class DiscountUsageListViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DiscountUsage.objects.all()
     serializer_class = DiscountUsageListSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return DiscountUsage.objects.all()
+        user = self.request.user
+
+        if user.is_superuser or user.is_staff:
+            return DiscountUsage.objects.all()
+
+        if hasattr(user, 'seller_profile'):
+            return DiscountUsage.objects.filter(seller_discount__seller = user.seller_profile)
+
+        if hasattr(user, 'customer_profile'):
+            return DiscountUsage.objects.filter(customer = user.customer_profile)
+
+        return None
 
 
 class DiscountApplyViewSet(viewsets.GenericViewSet):
