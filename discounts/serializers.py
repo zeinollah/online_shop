@@ -1,8 +1,12 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+
+from customers.models import CustomerProfile
 from orders.models import OrderItem
+from orders.serializers import OrderItemSerializer
 from .models import SellerDiscount, SiteDiscount, DiscountUsage
 from products.models import Product
+from datetime import date
 from utils.validators import (
     validate_discount_create_time,
     validate_discount_value,
@@ -191,3 +195,227 @@ class SiteDiscountCreateSerializer(serializers.ModelSerializer):
 
         return attrs
 
+
+class SiteDiscountUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SiteDiscount
+        fields = [
+            'name', 'discount_type', 'value',
+            'is_active', 'start_date', 'end_date', 'scope_type',
+            'target_customer', 'target_product'
+        ]
+        read_only_fields = [
+            'code',
+            'is_used', 'used_by', 'used_at',
+            'created_at', 'updated_at'
+        ]
+
+    def validate(self, attrs):
+
+        # Use the utils/validators function ----------------------------------
+        discount_type = attrs.get('discount_type', self.instance.discount_type)
+        value = attrs.get('value', self.instance.value)
+        validate_discount_value(discount_type, value)
+
+        start_date = attrs.get('start_date', self.instance.start_date)
+        end_date = attrs.get('end_date', self.instance.end_date)
+        validate_discount_create_time(start_date, end_date)
+
+        scope_type = attrs.get('scope_type', self.instance.scope_type)
+        target_customer = attrs.get('target_customer', self.instance.target_customer)
+        target_product = attrs.get('target_product', self.instance.target_product)
+        validate_scope_type(scope_type, target_product, target_customer)
+
+        # Local Validation ---------------------------------------------------
+        if self.instance.is_used:
+            raise serializers.ValidationError(
+                {"is_used" : "Can not updated discount code already used "}
+            )
+
+        return attrs
+
+
+
+"""
+Discount Usage Serializers
+"""
+class DiscountUsageListSerializer(serializers.ModelSerializer):
+    customer_name = serializers.CharField(source='customer.full_name', read_only=True)
+    order_number = serializers.CharField(source='order.order_number', read_only=True)
+    product_name = serializers.CharField(source='order_item.product_name', read_only=True)
+    discount_owner = serializers.CharField(read_only=True)
+    scope_type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DiscountUsage
+        fields = [
+            'id', 'discount_code', 'discount_type', 'scope_type',
+            'discount_value',
+            'discount_amount', 'customer', 'customer_name',
+            'order', 'order_number', 'order_item', 'product_name',
+            'discount_owner', 'used_at', 'created_at'
+        ]
+        read_only_fields = [
+            'id', 'discount_code', 'discount_type', 'scope_type',
+            'discount_value',
+            'discount_amount', 'customer', 'customer_name',
+            'order', 'order_number', 'order_item', 'product_name',
+            'discount_owner', 'used_at', 'created_at'
+        ]
+
+    def get_scope_type(self, obj):
+        if obj.seller_discount:
+            return obj.seller_discount.scope_type
+
+        if obj.site_discount:
+            return obj.site_discount.scope_type
+
+        return None
+
+
+class DiscountApplySerializer(serializers.Serializer):
+    discount_code = serializers.CharField()
+    order_item_id = serializers.IntegerField()
+
+    def validate_discount_code(self, value):
+
+        discount_code = SiteDiscount.objects.filter(code=value).first() # Site Discount Code Validation
+        if discount_code:
+            return discount_code
+
+        discount_code = SellerDiscount.objects.filter(code=value).first() # Seller Discount Code Validation
+        if discount_code:
+            return discount_code
+
+        raise serializers.ValidationError({
+            "discount_code" : "Discount code does not exist"
+        })
+
+    def validate_order_item_id(self, value):
+
+        try:
+            order_item= OrderItem.objects.get(id=value)
+            return order_item
+        except OrderItem.DoesNotExist:
+            raise serializers.ValidationError({
+                "order_item_id" : "OrderItem does not exist"
+            })
+
+
+    def validate(self, attrs):
+        discount = attrs['discount_code']
+        order_item = attrs['order_item_id']
+        request = self.context.get('request')
+        customer = request.user.customer_profile
+        product = order_item.product
+
+        if order_item.order.customer != customer:
+            raise serializers.ValidationError({
+                "order_item" : "You can only apply discounts to your own orders"
+            })
+
+        if order_item.order.order_status != 'pending':
+            raise serializers.ValidationError({
+                "order_status" : "You can only apply discount to pending orders"
+            })
+
+        existing_discount = DiscountUsage.objects.filter(order_item=order_item).first()
+        if existing_discount:
+            raise serializers.ValidationError({
+                "exist_code" : f"This item already has discount code applied ({existing_discount})"
+            })
+
+        if not discount.is_active :
+            raise serializers.ValidationError({
+                "discount" : "This discount is not active"
+            })
+
+        if discount.is_used:
+            raise serializers.ValidationError({
+                "discount" : "Discount already used"
+            })
+
+        today = date.today()
+        if discount.start_date > today:
+            raise serializers.ValidationError({
+                "start_date" : f"Discount is not available yet, you can use it from {discount.start_date}"
+            })
+
+        if discount.end_date < today:
+            raise serializers.ValidationError({
+                "end_date" : f"Discount expired on {discount.end_date}"
+            })
+
+        scope_type = discount.scope_type
+        if 'specific_customer' in scope_type:
+           if discount.target_customer != customer:
+               raise serializers.ValidationError({
+                   "discount" : "This discount code is not available for your account"
+           })
+
+        if isinstance(discount, SiteDiscount):
+            if 'specific_products' in scope_type:
+                if product.id != discount.target_product.id:
+                    raise serializers.ValidationError({
+                        "discount": "This discount does not apply to this product."
+                    })
+
+        if isinstance(discount, SellerDiscount):
+
+            if discount.seller != product.seller:
+                raise serializers.ValidationError({
+                    "discount" : "This discount does not apply to this seller."
+                })
+
+            if 'specific_products' in scope_type:
+                if product.id != discount.target_product.id:
+                    raise serializers.ValidationError({
+                        "discount": "This discount does not apply to this product."
+                    })
+
+
+        attrs['discount'] = discount
+        attrs['order_item'] = order_item
+        attrs['customer'] = customer
+
+        return attrs
+
+
+class DiscountRemoveSerializer(serializers.Serializer):
+    order_item = serializers.IntegerField()
+
+    def validate_order_item(self, value):
+        try:
+            order_item= OrderItem.objects.get(id=value)
+            return order_item
+        except OrderItem.DoesNotExist:
+            raise serializers.ValidationError({
+                "order_item_id" : "OrderItem does not exist"
+            })
+
+    def validate(self, attrs):
+        order_item = attrs['order_item']
+        request = self.context.get('request')
+        customer = request.user.customer_profile
+        print(f"order item = {order_item}")
+
+        if order_item.order.customer != customer:
+            raise serializers.ValidationError({
+                "order_item" : "You can only remove discounts from your own orders"
+            })
+
+        if order_item.order.order_status != 'pending':
+            raise serializers.ValidationError({
+                "order_item" : "You can only remove discounts from pending orders"
+            })
+
+        discount_usage = DiscountUsage.objects.filter(order_item=order_item).first()
+        if not discount_usage:
+            raise serializers.ValidationError({
+                "detail" : "No discount applied for this order"
+            })
+
+        attrs['discount_usage'] = discount_usage
+
+        return attrs

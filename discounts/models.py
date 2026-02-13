@@ -35,12 +35,13 @@ class BaseDiscount(models.Model):
     used_at = models.DateTimeField(_('used at'), null=True, blank=True)
     start_date = models.DateField(_('start day'), null=True, blank=True)
     end_date = models.DateField(_('end day'), null=True, blank=True)
-    used_by = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='used_by', null=True, blank=True)
+    used_by = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='%(class)s_used_by', null=True, blank=True)
     is_active = models.BooleanField(_('is active'), default=True)
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
     updated_at = models.DateTimeField(_('updated at'), auto_now=True)
 
     class Meta:
+        abstract = True
         ordering = ('-created_at',)
 
     def __str__(self):
@@ -57,7 +58,7 @@ class SellerDiscount(BaseDiscount):
         ordering = ('-created_at',)
 
     def __str__(self):
-        return f"{self.seller} - {self.name} - {self.code}"
+        return f"{self.name} - {self.code}"
 
 
 
@@ -88,7 +89,7 @@ class DiscountUsage(models.Model):
         ordering = ('-created_at',)
 
     def __str__(self):
-        return f"{self.discount_code} used by {self.customer.full_name} on {self.used_at.strftime('%Y-%m-%d')}"
+        return f"{self.discount_code}"
 
     @property
     def discount_owner(self):

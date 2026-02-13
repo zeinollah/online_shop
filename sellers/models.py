@@ -24,9 +24,12 @@ class SellerProfile(models.Model):
     @property
     def full_name(self):
         return f"{self.account.first_name} {self.account.last_name}"
+
     class Meta:
         ordering = ['-created_at']
 
+    def __str__(self):
+        return self.full_name
 
     # TODO = Create store model and separate seller and store
     # TODO = Write @property for total in stock product for seller or store
