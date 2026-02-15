@@ -1,16 +1,24 @@
+from django.utils import timezone
 from rest_framework import status, viewsets, mixins
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from .serializers import (RegistrationSerializer,
-                          UpdateUserSerializer,
-                          )
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
+from .serializers import (
+    RegistrationSerializer,
+    UpdateUserSerializer,
+    LoginSerializer,
+    LogoutSerializer,
+    )
 from .permissions import CurrentUserOrAdmin
 
 
 
 
 User = get_user_model()
+
+"""CRUD Views"""
 
 class RegistrationViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -76,3 +84,59 @@ class DeleteUserViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
 
 
 # TODO = Replace the local permission class by utils permission class
+
+"""Login / Logout Views"""
+
+class LoginViewSet(viewsets.GenericViewSet):
+    serializer_class = LoginSerializer
+    permission_classes = [AllowAny]
+    http_method_names = ['post']
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        user.last_login = timezone.now()
+        user.save(update_fields=['last_login'])
+
+        refresh = RefreshToken.for_user(user)
+        access_token = refresh.access_token
+
+        return Response(
+            {"message": "Login successful",
+             "access_token": str(access_token),
+             "refresh_token": str(refresh),
+             "user": {
+                 "email": user.email,
+                 "first_name": user.first_name,
+                 "last_name": user.last_name,
+                 "role": user.user_role,
+             }},
+            status=status.HTTP_200_OK
+        )
+
+
+class LogoutViewSet(viewsets.GenericViewSet):
+    serializer_class = LogoutSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['post']
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            refresh_token = serializer.validated_data['refresh']
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response(
+                {"message": "Logged out successfully"},
+                status=status.HTTP_200_OK
+            )
+
+        except KeyError as e:
+            return Response(
+                {"error": f"Token validation failed: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
