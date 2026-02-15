@@ -43,7 +43,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return new_user
 
 
-
 class UpdateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -78,8 +77,43 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 # TODO = Use on serializer class
 
 
-"""Login / Logout Serializers"""
+"""Change Password"""
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True, required=True)
+    new_password = serializers.CharField(write_only=True, required=True)
+    confirm_password = serializers.CharField(write_only=True, required=True)
 
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError({
+                "old_password": "Password is incorrect."
+            })
+        return value
+
+    def validate(self, attrs):
+        new_password = attrs.get('new_password')
+        confirm_password = attrs.get('confirm_password')
+
+        if new_password.isdigit():
+            raise serializers.ValidationError({
+                "detail": "Password can not be just digit."
+            })
+
+        if new_password != confirm_password:
+            raise serializers.ValidationError({
+                "detail": "Passwords don't match."
+            })
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.context['request'].user
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+        return user
+
+
+"""Login / Logout Serializers"""
 class LoginSerializer(serializers.Serializer):
     """
     Custom class for login

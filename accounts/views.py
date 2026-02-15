@@ -4,12 +4,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.exceptions import TokenError
 from .serializers import (
     RegistrationSerializer,
     UpdateUserSerializer,
     LoginSerializer,
     LogoutSerializer,
+    ChangePasswordSerializer,
     )
 from .permissions import CurrentUserOrAdmin
 
@@ -84,6 +84,25 @@ class DeleteUserViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
 
 
 # TODO = Replace the local permission class by utils permission class
+
+"""Change Password"""
+
+class ChangePasswordViewSet(viewsets.GenericViewSet):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['post']
+
+    def put(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"message": "Password changed"},
+            status=status.HTTP_200_OK
+        )
+
+
+
 
 """Login / Logout Views"""
 
