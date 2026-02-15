@@ -1,15 +1,17 @@
 from rest_framework import serializers, status
 from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator
-
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
 
     email = serializers.EmailField(
         label='Email', required=True,
-        validators=[UniqueValidator(queryset=get_user_model().objects.all(),
-                                    message='Email already exists')]
+        validators=[UniqueValidator(
+            queryset=get_user_model().objects.all(),
+            message='Email already exists')]
     )
 
     class Meta:
@@ -72,9 +74,67 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
-
-
-
 # TODO = refactor the RegistrationSerializer
 # TODO = Use on serializer class
+
+
+"""Login / Logout Serializers"""
+
+class LoginSerializer(serializers.Serializer):
+    """
+    Custom class for login
+    """
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, attrs):
+        email = attrs.get("email")
+        password = attrs.get("password")
+
+        if not email:
+            raise serializers.ValidationError({
+                "email": "Email is required."
+            })
+
+        if not password:
+            raise serializers.ValidationError({
+                "password": "password is required."
+            })
+
+        user = authenticate(
+            request=self.context.get("request"),
+            email=email,
+            password=password
+        )
+
+        if not user:
+            raise serializers.ValidationError({
+                "detail": "Invalid email or password."
+            })
+
+
+        attrs['user'] = user
+
+        return attrs
+
+
+class LogoutSerializer(serializers.Serializer):
+    """
+    Custom class for logout
+    """
+    refresh = serializers.CharField(write_only=True, required=True)
+
+    def validate_refresh(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError(
+                "Refresh token is required."
+            )
+
+        try:
+            token = RefreshToken(value)
+            return value
+
+        except Exception as e :
+            raise serializers.ValidationError(
+                {"detail": f"{e}"}
+            )
