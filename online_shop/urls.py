@@ -38,7 +38,6 @@ schema_view = get_schema_view(
     ),
     public=True,
     permission_classes=[AllowAny],
-    authentication_classes=[],
 )
 urlpatterns = [
     path('admin/', admin.site.urls),
