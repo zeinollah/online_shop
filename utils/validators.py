@@ -75,29 +75,39 @@ def validate_birth_day(value):
     return value
 
 
-def validate_file_size(max_size=None, amount=None):
+def validate_file_size(max_size=None, max_files=None):
     if max_size is None:
-        """default File Size is 20 MG."""
-        max_size = 20*1024*1024
+        """default File Size is 10 MG."""
+        max_size = 10*1024*1024
 
-    if amount is None:
-        amount = 1
 
-    def validate(values):
+    def validate(value):
 
-        # if len(values) > amount:
-        #     raise serializers.ValidationError(
-        #         {f"you can only upload {amount} pictures."}
-        #     )
+        if isinstance(value, (list,tuple)):
 
-        for value in values:
-            if value.size > max_size:
+            # Validation of number of file
+            if max_files is not None and len(value) > max_files:
                 raise serializers.ValidationError(
-                    f"{value.name} is too big. Maximum allowed is {filesizeformat(max_size)}, "
-                    f"but it is {filesizeformat(value.size)}."
+                    {"detail":f"You only can upload {max_files} files."}
                 )
 
-        return values
+            # Check files size
+            for file in value:
+                if hasattr(file, "size") and file.size > max_size:
+                    raise serializers.ValidationError(
+                        {"detail" : f"{file.size} is too big,"
+                                    f" maximum size allowed is {(filesizeformat(max_size))}."}
+                    )
+
+        # Validation for one file
+        else:
+            if hasattr(value, "size") and value.size > max_size:
+                raise serializers.ValidationError(
+                    {"detail" : "file size is too lagre, "
+                                f" maximum size allowed is {(filesizeformat(max_size))}."}
+                )
+
+        return value
 
     return validate
 
