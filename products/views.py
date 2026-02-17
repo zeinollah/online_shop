@@ -1,16 +1,18 @@
 from rest_framework import viewsets, status, mixins
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from utils.permissions import IsSellerProfileOwnerOrSuperuser
 from .models import Product
-from .serializers import ProductSerializer
+from .serializers import (
+    ProductSerializer,
+    ProductUpdateSerializer,
+)
 
 
 class ProductViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes =[IsAuthenticated, IsSellerProfileOwnerOrSuperuser]
+    permission_classes =[IsAuthenticated]
 
 
     def create(self, request, *args, **kwargs):
@@ -27,7 +29,7 @@ class ProductViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 class ProductDetailViewSet(ReadOnlyModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes =[IsAuthenticated, IsSellerProfileOwnerOrSuperuser]
+    permission_classes =[IsAuthenticated]
 
     filterset_fields = ['category', 'in_stock', 'seller__city']
     search_fields = ['$name', '$description', '$seller__store_name']
@@ -43,15 +45,17 @@ class ProductDetailViewSet(ReadOnlyModelViewSet):
 
 class ProductUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    permission_classes =[IsAuthenticated,IsSellerProfileOwnerOrSuperuser]
+    serializer_class = ProductUpdateSerializer
+    permission_classes =[IsAuthenticated,]
 
     def update(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        instance = self.get_object()
+        serializer = self.serializer_class(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save(seller=request.user.seller_profile)
+        serializer.save()
         return Response(
             {"message": "Product data update successfully"},
+            status=status.HTTP_200_OK
         )
 
 
@@ -59,7 +63,7 @@ class ProductUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
 class ProductDeleteViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated, IsSellerProfileOwnerOrSuperuser]
+    permission_classes = [IsAuthenticated]
     http_method_names = ['delete']
 
     def destroy(self, request, *args, **kwargs):
@@ -67,4 +71,5 @@ class ProductDeleteViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
         instance.delete()
         return Response(
             {"message": "Product delete successfully"},
+            status=status.HTTP_200_OK
         )
