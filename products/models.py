@@ -1,7 +1,10 @@
 from django.db import models
+import uuid
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from sellers.models import SellerProfile
-
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 class Product(models.Model):
@@ -16,6 +19,29 @@ class Product(models.Model):
     created_at = models.DateTimeField(_("Created at"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated at"), auto_now=True)
 
+    def save(self, *args, **kwargs):
+        # Create Slug when seller upload product
+        if not self.slug:
+            self.slug = self.generate_unique_slug()
+        else:
+        # Update the slug if seller update the product name
+            if self.id:
+                old_product = Product.objects.filter(id=self.id).first()
+                if old_product != old_product.name :
+                    self.slug = self.generate_unique_slug()
+        super().save(*args, **kwargs)
+
+
+    def generate_unique_slug(self):
+        """Generate a unique slug for product."""
+        base_slug = slugify(self.name)
+        store_name = self.seller.store_name
+        slug = f"{base_slug}-{store_name}"
+        count = 1
+        while Product.objects.filter(slug=slug).exclude(id=self.id).exists():
+            slug = f"{base_slug}-{store_name}-{count}"
+            count += 1
+        return slug
 
     class Meta:
         ordering = ('created_at',)
