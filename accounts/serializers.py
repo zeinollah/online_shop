@@ -5,6 +5,9 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
+User = get_user_model()
+
+
 class RegistrationSerializer(serializers.ModelSerializer):
 
     email = serializers.EmailField(
@@ -172,3 +175,38 @@ class LogoutSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"detail": f"{e}"}
             )
+
+
+
+"""Email Verification Serializer"""
+class ResendVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+    def validate_email(self, value):
+        try:
+            user = User.objects.get(email=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                {"detail": "User does not exist."}
+            )
+
+        if hasattr(user, 'verification_tokens'):
+            raise serializers.ValidationError(
+                {"detail": "This account does not require email verification."}
+            )
+        profile = self._get_profile(user)
+        if profile and profile.is_verified:
+            raise serializers.ValidationError(
+                "This account is already verified."
+            )
+
+        self.context['user'] = user
+        return value
+
+    def _get_profile(self, user):
+        if hasattr(user, 'customer_profile'):
+            return user.customer_profile
+        if hasattr(user, 'seller_profile'):
+            return user.seller_profile
+        return None
