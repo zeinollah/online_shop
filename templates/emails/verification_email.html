@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #2c3e50;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+        .body {
+            padding: 40px 30px;
+            color: #333333;
+        }
+        .body p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0 0 20px 0;
+        }
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .verify-button {
+            background-color: #27ae60;
+            color: #ffffff;
+            padding: 14px 32px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .expiry-notice {
+            background-color: #fef9e7;
+            border-left: 4px solid #f39c12;
+            padding: 12px 16px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #7d6608;
+        }
+        .fallback-url {
+            word-break: break-all;
+            color: #2980b9;
+            font-size: 13px;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #999999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div class="header">
+            <h1>Online Shop</h1>
+        </div>
+
+        <div class="body">
+            <p>Hi <strong>{{ user }}</strong>,</p>
+
+            <p>Thank you for registering. Please verify your email address by clicking the button below.</p>
+
+            <div class="button-container">
+                <a href="{{ verification_url }}" class="verify-button">Verify Email Address</a>
+            </div>
+
+            <div class="expiry-notice">
+                This link will expire in <strong>{{ expires_hours }} hours</strong>.
+                If you did not register, you can safely ignore this email.
+            </div>
+
+            <p>If the button does not work, copy and paste the link below into your browser:</p>
+            <p class="fallback-url">{{ verification_url }}</p>
+        </div>
+
+        <div class="footer">
+            <p>This is an automated message. Please do not reply to this email.</p>
+            <p>&copy; Online Shop. All rights reserved.</p>
+        </div>
+
+    </div>
+</body>
+</html>
