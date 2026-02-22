@@ -63,14 +63,15 @@ class StoreDiscountCreateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
 
         # Use the utils/validators function ----------------------------------
-        validate_discount_create_time(attrs['start_date'], attrs['end_date'])
-        validate_discount_value(attrs['discount_type'], attrs['value'])
+        validate_discount_create_time(attrs.get('start_date'), attrs.get('end_date'))
+        validate_discount_value(attrs['discount_type'], attrs.get('value'))
         validate_scope_type(attrs['scope_type'], attrs.get('target_product'), attrs.get('target_customer'))
 
         # Local Validation ---------------------------------------------------
         request = self.context.get('request')
         target_product = attrs.get('target_product')
         store = request.user.seller_profile.store
+
 
         if target_product:
             if store != target_product.store:
