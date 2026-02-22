@@ -2,13 +2,13 @@ from django.db import models
 import uuid
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
-from sellers.models import SellerProfile
+from sellers.models import Store
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
 class Product(models.Model):
-    seller = models.ForeignKey(SellerProfile, on_delete=models.CASCADE, related_name='seller')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(_("Product name"), max_length=200, blank=True, null=True)
     slug = models.SlugField(_("Slug"), max_length=200, unique=True, blank=True, null=True)
     description = models.TextField(_("Description"), max_length=500, blank=True, null=True)
@@ -35,7 +35,7 @@ class Product(models.Model):
     def generate_unique_slug(self):
         """Generate a unique slug for product."""
         base_slug = slugify(self.name)
-        store_name = self.seller.store_name
+        store_name = self.store.store_name
         slug = f"{base_slug}-{store_name}"
         count = 1
         while Product.objects.filter(slug=slug).exclude(id=self.id).exists():

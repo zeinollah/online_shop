@@ -1,11 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-
-from customers.models import CustomerProfile
 from orders.models import OrderItem
-from orders.serializers import OrderItemSerializer
-from .models import SellerDiscount, SiteDiscount, DiscountUsage
-from products.models import Product
+from .models import StoreDiscount, SiteDiscount, DiscountUsage
 from datetime import date
 from utils.validators import (
     validate_discount_create_time,
@@ -15,17 +11,17 @@ from utils.validators import (
 
 
 """
-Seller Discounts Serializers 
+Store Discounts Serializers 
 """
-class SellerDiscountListSerializer(serializers.ModelSerializer):
+class StoreDiscountListSerializer(serializers.ModelSerializer):
 
-    seller_name = serializers.CharField(source='seller.store_name', read_only=True)
+    seller_name = serializers.CharField(source='store.store_name', read_only=True)
     target_customer_name = serializers.CharField(source='target_customer.full_name', read_only=True)
     target_product_name = serializers.CharField(source='target_product.name', read_only=True)
     used_by_name = serializers.CharField(source='used_by.full_name', read_only=True)
 
     class Meta:
-        model = SellerDiscount
+        model = StoreDiscount
         fields = [
             'id', 'code', 'name', 'discount_type', 'value',
             'scope_type', 'is_active', 'is_used', 'used_by', 'used_by_name', 'used_at',
@@ -44,24 +40,24 @@ class SellerDiscountListSerializer(serializers.ModelSerializer):
         ]
 
 
-class SellerDiscountCreateSerializer(serializers.ModelSerializer):
+class StoreDiscountCreateSerializer(serializers.ModelSerializer):
     code = serializers.CharField(validators=[
         UniqueValidator(
-            queryset=SellerDiscount.objects.all(),
+            queryset=StoreDiscount.objects.all(),
             message='Code already exists'
         )]
     )
     class Meta:
-        model = SellerDiscount
+        model = StoreDiscount
         fields = [
             'code', 'name', 'discount_type', 'value',
             'scope_type', 'is_active',
             'start_date', 'end_date',
-            'seller', 'target_customer', 'target_product',
+            'store', 'target_customer', 'target_product',
             'created_at', 'updated_at'
         ]
         read_only_fields = [
-            'seller', 'created_at', 'updated_at'
+            'store', 'created_at', 'updated_at'
         ]
 
     def validate(self, attrs):
@@ -73,29 +69,29 @@ class SellerDiscountCreateSerializer(serializers.ModelSerializer):
 
         # Local Validation ---------------------------------------------------
         request = self.context.get('request')
-        seller = request.user.seller_profile
         target_product = attrs.get('target_product')
+        store = request.user.seller_profile.store
 
         if target_product:
-            if seller != target_product.seller:
+            if store != target_product.store:
                 raise serializers.ValidationError(
-                    {"ownership" : f"Product ({target_product.name}) dose not belong to your shop "}
+                    {"ownership": f"Product ({target_product.name}) does not belong to your shop."}
                 )
 
         return attrs
 
 
-class SellerDiscountUpdateSerializer(serializers.ModelSerializer):
+class StoreDiscountUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = SellerDiscount
+        model = StoreDiscount
         fields = [
             'name', 'discount_type', 'value',
             'scope_type','is_active', 'start_date', 'end_date',
             'target_customer', 'target_product',
         ]
         read_only_fields = [
-            'code', 'seller',
+            'code', 'store',
             'is_used', 'used_by', 'used_at',
             'created_at', 'updated_at',
         ]
@@ -123,15 +119,14 @@ class SellerDiscountUpdateSerializer(serializers.ModelSerializer):
             )
 
         request = self.context.get('request')
-        seller = request.user.seller_profile
         target_product = attrs.get('target_product')
+        store = request.user.seller_profile.store
 
         if target_product:
-            if seller != target_product.seller:
+            if store != target_product.store:
                 raise serializers.ValidationError(
-                    {"ownership" : f"Product ({target_product.name}) dose not belong to your shop "}
+                    {"ownership": f"Product ({target_product.name}) does not belong to your shop."}
                 )
-
         return attrs
 
 
@@ -265,8 +260,8 @@ class DiscountUsageListSerializer(serializers.ModelSerializer):
         ]
 
     def get_scope_type(self, obj):
-        if obj.seller_discount:
-            return obj.seller_discount.scope_type
+        if obj.store_discount:
+            return obj.store_discount.scope_type
 
         if obj.site_discount:
             return obj.site_discount.scope_type
@@ -284,7 +279,7 @@ class DiscountApplySerializer(serializers.Serializer):
         if discount_code:
             return discount_code
 
-        discount_code = SellerDiscount.objects.filter(code=value).first() # Seller Discount Code Validation
+        discount_code = StoreDiscount.objects.filter(code=value).first() # Seller Discount Code Validation
         if discount_code:
             return discount_code
 
@@ -361,13 +356,11 @@ class DiscountApplySerializer(serializers.Serializer):
                         "discount": "This discount does not apply to this product."
                     })
 
-        if isinstance(discount, SellerDiscount):
-
-            if discount.seller != product.seller:
+        if isinstance(discount, StoreDiscount):
+            if discount.store != product.store:
                 raise serializers.ValidationError({
-                    "discount" : "This discount does not apply to this seller."
+                    "discount": "This discount does not apply to this store."
                 })
-
             if 'specific_products' in scope_type:
                 if product.id != discount.target_product.id:
                     raise serializers.ValidationError({

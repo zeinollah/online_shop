@@ -4,12 +4,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from decimal import Decimal
 from utils.permissions import IsDiscountOwnerOrSuperuser, IsOrderOwnerOrSuperuser
-from .models import SellerDiscount, SiteDiscount, DiscountUsage
+from .models import StoreDiscount, SiteDiscount, DiscountUsage
 from rest_framework.exceptions import PermissionDenied
 from .serializers import (
-    SellerDiscountListSerializer,
-    SellerDiscountCreateSerializer,
-    SellerDiscountUpdateSerializer,
+    StoreDiscountListSerializer,
+    StoreDiscountCreateSerializer,
+    StoreDiscountUpdateSerializer,
     SiteDiscountCreateSerializer,
     SiteDiscountListSerializer,
     SiteDiscountUpdateSerializer,
@@ -23,9 +23,9 @@ from .serializers import (
 """
 Seller Discount Views 
 """
-class SellerDiscountCreateViewSet(viewsets.ModelViewSet):
-    queryset = SellerDiscount.objects.all()
-    serializer_class = SellerDiscountCreateSerializer
+class StoreDiscountCreateViewSet(viewsets.ModelViewSet):
+    queryset = StoreDiscount.objects.all()
+    serializer_class = StoreDiscountCreateSerializer
     http_method_names = ['post']
     permission_classes = [IsAuthenticated]
 
@@ -37,7 +37,7 @@ class SellerDiscountCreateViewSet(viewsets.ModelViewSet):
             )
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(seller=request.user.seller_profile)
+        serializer.save(store=request.user.seller_profile.store)
 
         return Response({
             "message": "Your Discount has been created successfully",
@@ -45,9 +45,9 @@ class SellerDiscountCreateViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_201_CREATED)
 
 
-class SellerDiscountInfoViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = SellerDiscount.objects.all()
-    serializer_class = SellerDiscountListSerializer
+class StoreDiscountInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = StoreDiscount.objects.all()
+    serializer_class = StoreDiscountListSerializer
     permission_classes = [IsAuthenticated, IsDiscountOwnerOrSuperuser]
     filterset_fields = ['is_active', 'is_used', 'discount_type', 'scope_type']
     search_fields = ['code', 'name']
@@ -56,18 +56,19 @@ class SellerDiscountInfoViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_superuser or user.is_staff:
-            return SellerDiscount.objects.all()
+            return StoreDiscount.objects.all()
 
         if hasattr(user, 'seller_profile'):
-            return SellerDiscount.objects.filter(seller=user.seller_profile)
+            return StoreDiscount.objects.filter(store=user.seller_profile.store)
+
 
         else:
             return False
 
 
-class SellerDiscountUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
-    queryset = SellerDiscount.objects.all()
-    serializer_class = SellerDiscountUpdateSerializer
+class StoreDiscountUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    queryset = StoreDiscount.objects.all()
+    serializer_class = StoreDiscountUpdateSerializer
     permission_classes = [IsAuthenticated, IsDiscountOwnerOrSuperuser]
 
     def update(self, request, *args, **kwargs):
@@ -82,9 +83,9 @@ class SellerDiscountUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewS
         )
 
 
-class SellerDiscountDeleteViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = SellerDiscount.objects.all()
-    serializer_class = SellerDiscountUpdateSerializer
+class StoreDiscountDeleteViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = StoreDiscount.objects.all()
+    serializer_class = StoreDiscountUpdateSerializer
     permission_classes = [IsAuthenticated, IsDiscountOwnerOrSuperuser]
 
     def destroy(self, request, *args, **kwargs):
@@ -188,7 +189,7 @@ class DiscountUsageListViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DiscountUsageListSerializer
     permission_classes = [IsAuthenticated]
 
-    filterset_fields = ['discount_type', 'seller_discount', 'site_discount' ]
+    filterset_fields = ['discount_type', 'store_discount', 'site_discount']
     search_fields = [
         'customer__account__first_name',
         'customer__account__last_name',
@@ -203,7 +204,7 @@ class DiscountUsageListViewSet(viewsets.ReadOnlyModelViewSet):
             return DiscountUsage.objects.all()
 
         if hasattr(user, 'seller_profile'):
-            return DiscountUsage.objects.filter(seller_discount__seller = user.seller_profile)
+            return DiscountUsage.objects.filter(store_discount__store=user.seller_profile.store)
 
         if hasattr(user, 'customer_profile'):
             return DiscountUsage.objects.filter(customer = user.customer_profile)
@@ -238,7 +239,7 @@ class DiscountApplyViewSet(viewsets.GenericViewSet):
             discount_amount = min(discount.value, item_subtotal)
 
         discount_usage = DiscountUsage.objects.create(
-            seller_discount = discount if isinstance(discount, SellerDiscount) else None,
+            store_discount = discount if isinstance(discount, StoreDiscount) else None,
             site_discount = discount if isinstance(discount, SiteDiscount) else None,
             discount_code = discount.code,
             discount_type = discount.discount_type,
@@ -286,7 +287,7 @@ class DiscountRemoveViewSet(viewsets.GenericViewSet):
 
         order_item = serializer.validated_data['order_item']
         discount_usage = serializer.validated_data['discount_usage']
-        discount = discount_usage.seller_discount or discount_usage.site_discount or None
+        discount = discount_usage.store_discount or discount_usage.site_discount or None
         order_item.discount = Decimal(0)
         order_item.save()
 

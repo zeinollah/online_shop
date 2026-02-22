@@ -1,18 +1,18 @@
 from django.contrib import admin
-from .models import SellerProfile
+from .models import SellerProfile, Store
 
 class SellerProfileAdmin(admin.ModelAdmin):
     list_display =["id", "full_name", "email",
-                   "phone_number", "city", "store_name", "physical_store", "store_address",
+                   "phone_number", "city",
                    "post_code", "is_active", "is_verified",
                    "created_at", "updated_at"
                    ]
 
-    list_filter = ["city", "physical_store", "is_verified"]
+    list_filter = ["city", "is_verified"]
 
-    search_fields = ["account__first_name", "account__last_name",
-                     "account__name", "store_name"
-                     ]
+    search_fields = [
+        "phone_number", "post_code",
+    ]
 
     def email(self, obj):
         return obj.account.email
@@ -28,3 +28,25 @@ class SellerProfileAdmin(admin.ModelAdmin):
     is_active.admin_order_field = 'is_active'
 
 admin.site.register(SellerProfile, SellerProfileAdmin)
+
+
+class StoreAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "seller", "store_name",
+        "store_phone_number",
+        "physical_store",
+        "store_address", "store_post_code",
+        "is_active",
+        "created_at", "updated_at"
+    ]
+
+    list_filter = [
+        "physical_store", "city", "is_active"
+    ]
+
+    search_fields = [
+        "store_name", "store_phone_number", "store_post_code"
+    ]
+
+admin.site.register(Store, StoreAdmin)

@@ -18,7 +18,7 @@ class ProductViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(seller=request.user.seller_profile)
+        serializer.save(store=request.user.seller_profile.store)
         return Response(
             {"message": "Product data upload successfully"},
             status=status.HTTP_201_CREATED
@@ -26,20 +26,20 @@ class ProductViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
 
 
-class ProductDetailViewSet(ReadOnlyModelViewSet):
+class ProductInfoViewSet(ReadOnlyModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes =[IsAuthenticated]
 
-    filterset_fields = ['category', 'in_stock', 'seller__city']
-    search_fields = ['$name', '$description', '$seller__store_name']
+    filterset_fields = ['category', 'in_stock', 'store__city']
+    search_fields = ['$name', '$description', '$store__city']
     ordering_fields = ['created_at', 'price', 'category']
 
     def get_queryset(self):
         user = self.request.user
         if user.is_superuser or user.is_staff:
             return Product.objects.all()
-        return Product.objects.filter(seller=user.seller_profile)
+        return Product.objects.filter(store=user.seller_profile.store)
 
 
 
