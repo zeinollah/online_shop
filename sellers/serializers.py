@@ -9,6 +9,9 @@ from utils.validators import (
     )
 
 
+"""
+Seller Serializers
+"""
 class SellerProfileSerializer(serializers.ModelSerializer):
 
     full_name = serializers.CharField()

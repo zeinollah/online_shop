@@ -15,7 +15,7 @@ from .views import (
 
 router = DefaultRouter()
 
-"""Seller Discount Urls"""
+"""Store Discount Urls"""
 router.register('store-discount-info', StoreDiscountInfoViewSet, basename='store_discount_info')
 router.register('create-store-discount', StoreDiscountCreateViewSet, basename='create_store_discount')
 router.register('update-store-discount', StoreDiscountUpdateViewSet, basename='update_store_discount')
