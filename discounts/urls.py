@@ -16,10 +16,10 @@ from .views import (
 router = DefaultRouter()
 
 """Seller Discount Urls"""
-router.register('seller-discount-info', StoreDiscountInfoViewSet, basename='seller_discount_info')
-router.register('create-seller-discount', StoreDiscountCreateViewSet, basename='create_seller_discount')
-router.register('update-seller-discount', StoreDiscountUpdateViewSet, basename='update_seller_discount')
-router.register('delete-seller-discount', StoreDiscountDeleteViewSet, basename='delete_seller_discount')
+router.register('store-discount-info', StoreDiscountInfoViewSet, basename='store_discount_info')
+router.register('create-store-discount', StoreDiscountCreateViewSet, basename='create_store_discount')
+router.register('update-store-discount', StoreDiscountUpdateViewSet, basename='update_store_discount')
+router.register('delete-store-discount', StoreDiscountDeleteViewSet, basename='delete_store_discount')
 
 
 """Site Discount Urls"""
