@@ -152,6 +152,15 @@ def validate_discount_create_time(start_date, end_date):
     """
     today = date.today()
 
+    if not start_date:
+        raise serializers.ValidationError(
+            {"start_date": "Start date is required."}
+        )
+    if not end_date:
+        raise serializers.ValidationError(
+            {"end_date": "End date is required."}
+        )
+
     if start_date > end_date:
         raise serializers.ValidationError(
             {"Date" : "End Date can not before start date"}
