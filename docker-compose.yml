@@ -40,5 +40,13 @@ services:
       db:
         condition: service_healthy
 
+  # Email test
+  smtp4dev:
+    image: rnwood/smtp4dev:latest
+    container_name: online_shop_smtp4dev
+    restart: always
+    ports:
+      - "5000:80"
+      - "25:25"
 volumes:
   postgres_data:

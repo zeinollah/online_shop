@@ -7,6 +7,8 @@ from .views import (
     LoginViewSet,
     LogoutViewSet,
     ChangePasswordViewSet,
+    VerifyEmailViewSet,
+    ResendVerificationViewSet
 )
 
 router = DefaultRouter()
@@ -25,6 +27,10 @@ router.register(r'logout', LogoutViewSet, basename='logout')
 
 """Change Password"""
 router.register(r'change-password', ChangePasswordViewSet, basename='change-password')
+
+"""Email Verification routes"""
+router.register(r'verify-email', VerifyEmailViewSet, basename='verify-email')
+router.register(r'resend-verification', ResendVerificationViewSet, basename='resend-verification')
 
 
 urlpatterns = router.urls
