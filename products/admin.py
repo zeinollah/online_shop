@@ -9,21 +9,21 @@ class ProductAdmin(admin.ModelAdmin):
                     "slug", "description",
                     "created_at", "updated_at"]
 
-    list_filter = ["in_stock", "seller__city",]
+    list_filter = ["in_stock", "store__city",]
 
-    search_fields = ["name", "seller__store_name"]
+    search_fields = ["name", "store__store_name"]
 
 
     def city(self, obj):
-        return obj.seller.city
+        return obj.store.city
     city.short_description = "City"
 
     def store_name(self, obj):
-        return obj.seller.store_name
+        return obj.store.store_name
     store_name.short_description = "Store Name"
 
     def phone_number(self, obj):
-        return obj.seller.phone_number
+        return obj.store.store_phone_number
     phone_number.short_description = "Phone Number"
 
 

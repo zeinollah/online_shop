@@ -70,7 +70,21 @@ class IsDiscountOwnerOrSuperuser(permissions.BasePermission):
 
         if hasattr(obj, 'seller'):
             if hasattr(user, 'seller_profile'):
-                return obj.seller == user.seller_profile
+                return obj.seller == user.seller_profile.store
             return False
 
         return False
+
+
+
+class IsStoreOwnerOrSuperuser(permissions.BasePermission):
+    """
+    Make sure only store owner or admin can update or delete the store data
+    """
+    message = 'You DO NOT have permission to do this action.'
+
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if user.is_superuser or user.is_staff:
+            return True
+        return obj.seller == user.seller_profile

@@ -1,9 +1,9 @@
 from rest_framework.routers import DefaultRouter
 from .views import (
-    SellerDiscountCreateViewSet,
-    SellerDiscountUpdateViewSet,
-    SellerDiscountInfoViewSet,
-    SellerDiscountDeleteViewSet,
+    StoreDiscountCreateViewSet,
+    StoreDiscountUpdateViewSet,
+    StoreDiscountInfoViewSet,
+    StoreDiscountDeleteViewSet,
     SiteDiscountCreateViewSet,
     SiteDiscountInfoViewSet,
     SiteDiscountUpdateViewSet,
@@ -15,11 +15,11 @@ from .views import (
 
 router = DefaultRouter()
 
-"""Seller Discount Urls"""
-router.register('seller-discount-info', SellerDiscountInfoViewSet, basename='seller_discount_info')
-router.register('create-seller-discount', SellerDiscountCreateViewSet, basename='create_seller_discount')
-router.register('update-seller-discount', SellerDiscountUpdateViewSet, basename='update_seller_discount')
-router.register('delete-seller-discount', SellerDiscountDeleteViewSet, basename='delete_seller_discount')
+"""Store Discount Urls"""
+router.register('store-discount-info', StoreDiscountInfoViewSet, basename='store_discount_info')
+router.register('create-store-discount', StoreDiscountCreateViewSet, basename='create_store_discount')
+router.register('update-store-discount', StoreDiscountUpdateViewSet, basename='update_store_discount')
+router.register('delete-store-discount', StoreDiscountDeleteViewSet, basename='delete_store_discount')
 
 
 """Site Discount Urls"""

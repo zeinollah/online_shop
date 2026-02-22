@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from customers.models import CustomerProfile
-from sellers.models import SellerProfile
+from sellers.models import Store
 from products.models import Product
 from orders.models import Order, OrderItem
 
@@ -49,10 +49,10 @@ class BaseDiscount(models.Model):
 
 
 
-class SellerDiscount(BaseDiscount):
-    seller = models.ForeignKey(SellerProfile, on_delete=models.CASCADE, related_name='seller_discounts')
-    target_customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='seller_discounts', null=True, blank=True)
-    target_product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='seller_discounts', null=True, blank=True)
+class StoreDiscount(BaseDiscount):
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='store_discounts')
+    target_customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='store_discounts', null=True, blank=True)
+    target_product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='store_discounts', null=True, blank=True)
 
     class Meta:
         ordering = ('-created_at',)
@@ -72,7 +72,7 @@ class SiteDiscount(BaseDiscount):
 
 
 class DiscountUsage(models.Model):
-    seller_discount = models.ForeignKey(SellerDiscount, on_delete=models.CASCADE, null=True, blank=True, related_name='usage_records')
+    store_discount = models.ForeignKey(StoreDiscount, on_delete=models.CASCADE, null=True, blank=True, related_name='usage_records')
     site_discount = models.ForeignKey(SiteDiscount, on_delete=models.CASCADE, null=True, blank=True, related_name='usage_records')
     discount_code = models.CharField(_("Discount code"), max_length=50)
     discount_type = models.CharField(_("Discount type"), max_length=50)
@@ -93,4 +93,4 @@ class DiscountUsage(models.Model):
 
     @property
     def discount_owner(self):
-        return 'site discount' if self.site_discount else 'seller discount'
+        return 'site discount' if self.site_discount else 'store discount'

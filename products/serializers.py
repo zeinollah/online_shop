@@ -9,58 +9,67 @@ class ProductSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
-    store_name = serializers.CharField(source="seller.store_name", required=False,)
-    phone_number = serializers.CharField(source="seller.phone_number", required=False,)
-    city = serializers.CharField(source="seller.city", required=False,)
+    store_name = serializers.CharField(source="store.store_name", required=False)
+    store_phone_number = serializers.CharField(source="store.store_phone_number", required=False)
+    city = serializers.CharField(source="store.city", required=False)
 
     class Meta:
         model = Product
         fields = [
-            "id", "seller", "slug", "name",
+            "id", "store", "slug", "name",
             "description", "price", "category",
             "in_stock", "picture",
-            "phone_number", "store_name", "city",
+            "store_phone_number", "store_name", "city",
             "created_at", "updated_at",
         ]
         read_only_fields = [
-            "seller", "slug",
-            "store_name", "phone_number", "picture",
+            "store", "slug",
+            "store_name", "store_phone_number",
             "city", "created_at", "updated_at"
         ]
 
     def validate(self, attrs):
         seller = self.context['request'].user.seller_profile
 
-        """
-        Profile validation data
-        """
-        store_name = getattr(seller, 'store_name', None)
+        if not hasattr(seller, 'store'):
+            raise serializers.ValidationError(
+                {"message": "You need to create a store before uploading products."}
+            )
+
+        store = seller.store
+
+        store_name = getattr(store, 'store_name', None)
         if store_name is None or store_name.strip() == "":
             raise serializers.ValidationError(
-                {"message" : "Store name is required for upload products, please update your profile."},
+                {"message": "Store name is required for upload products, please update your store."}
             )
 
-        phone_number = getattr(seller, 'phone_number', None)
-        if phone_number is None or phone_number.strip() == "":
+        store_phone_number = getattr(store, 'store_phone_number', None)
+        if store_phone_number is None or store_phone_number.strip() == "":
             raise serializers.ValidationError(
-                {"message" : "Phone number is required for upload products, please update your profile."},
+                {"message": "Phone number is required for upload products, please update your store."}
             )
 
-        address = getattr(seller, 'address', None)
-        store_address = getattr(seller, 'store_address', None)
-        if address is None and store_address is None:
+        store_address = getattr(store, 'store_address', None)
+        if store_address is None or store_address.strip() == "":
             raise serializers.ValidationError(
-                {"message" : "Address is required for upload products, please update your profile."},
+                {"message": "Store address is required for upload products, please update your store."}
             )
 
-        city = getattr(seller, 'city', None)
+        city = getattr(store, 'city', None)
         if city is None or city.strip() == "":
             raise serializers.ValidationError(
-                {"message" : "City name is required for upload products, please update your profile."},
+                {"message": "City is required for upload products, please update your store."}
+            )
+
+        store_post_code = getattr(store, 'store_post_code', None)
+        if store_post_code is None or store_post_code.strip() == "":
+            raise serializers.ValidationError(
+                {"message": "Post code is required for upload products, please update your store."}
             )
 
         """
-        Product fields validation data
+        Product fields validation
         """
         name = attrs.get("name")
         if not name or not name.strip():
@@ -75,11 +84,10 @@ class ProductSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"message": "Price is required."})
         if price < 0:
             raise serializers.ValidationError({"message": "Price cannot be negative."})
-        if price ==  0 :
+        if price == 0:
             raise serializers.ValidationError({"message": "Price cannot be 0."})
 
         return attrs
-
 
 
 class ProductUpdateSerializer(serializers.ModelSerializer):

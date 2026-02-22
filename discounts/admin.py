@@ -1,36 +1,35 @@
 from django.contrib import admin
 from .models import (
-    SellerDiscount,
+    StoreDiscount,
     SiteDiscount,
     DiscountUsage,
 )
 
 
-class SellerDiscountAdmin(admin.ModelAdmin):
+class StoreDiscountAdmin(admin.ModelAdmin):
     list_display = [
         'code', 'name', 'store_name',
         'scope_type', 'discount_type', 'value',
         'is_active', 'is_used', 'used_at', 'used_by',
         'start_date', 'end_date',
-        'target_product', 'target_product'
+        'target_product', 'target_customer'
     ]
 
     list_filter = [
-        'seller',
+        'store',
         'scope_type', 'discount_type',
-        'is_used', 'is_active', 'is_used'
+        'is_used', 'is_active',
     ]
 
     search_fields = [
-        'code', 'name', 'seller__store_name',
-        'seller__seller__name',
+        'code', 'name', 'store__store_name',
     ]
 
-    def store_name(self,obj):
-        return f"{obj.seller.store_name}"
-    store_name.admin_order_field = 'Store_Name'
+    def store_name(self, obj):
+        return f"{obj.store.store_name}"
+    store_name.admin_order_field = 'store__store_name'
 
-admin.site.register(SellerDiscount, SellerDiscountAdmin)
+admin.site.register(StoreDiscount, StoreDiscountAdmin)
 
 
 
@@ -40,7 +39,7 @@ class SiteDiscountAdmin(admin.ModelAdmin):
         'scope_type', 'discount_type', 'value',
         'is_active', 'is_used', 'used_at', 'used_by',
         'start_date', 'end_date',
-        'target_product', 'target_product'
+        'target_product',
     ]
 
     list_filter = [
@@ -67,7 +66,7 @@ class DiscountUsageAdmin(admin.ModelAdmin):
     ]
 
     list_filter = [
-        "seller_discount", "site_discount",
+        "store_discount", "site_discount",
         "discount_type"
     ]
 
