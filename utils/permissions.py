@@ -38,6 +38,14 @@ class IsOrderOwnerOrSuperuser(permissions.BasePermission):
 
     message = 'You can NOT DO this action.'
 
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_superuser or user.is_staff:
+            return True
+        if hasattr(user, 'customer_profile'):
+            return True
+        return False
+
     def has_object_permission(self, request, view, obj):
         user = request.user
 
@@ -62,6 +70,14 @@ class IsDiscountOwnerOrSuperuser(permissions.BasePermission):
     """
 
     message = 'You DO NOT access to this discount.'
+
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_superuser or user.is_staff:
+            return True
+        if hasattr(user, 'seller_profile'):
+            return True
+        return False
 
     def has_object_permission(self, request, view, obj):
         user = request.user
