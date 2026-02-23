@@ -54,7 +54,8 @@ class OrderInfoViewSet(viewsets.ReadOnlyModelViewSet):
         if hasattr(user, 'customer_profile'):
             return Order.objects.filter(customer=user.customer_profile)
 
-        return False
+        else:
+            return Order.objects.none()
 
 
 
@@ -133,10 +134,12 @@ class OrderItemInfoViewSet(viewsets.ReadOnlyModelViewSet):
         user = self.request.user
         if user.is_superuser or user.is_staff:
             return OrderItem.objects.all()
+
         if hasattr(user, 'customer_profile'):
             return OrderItem.objects.filter(order__customer=user.customer_profile)
 
-        return False
+        else:
+            return OrderItem.objects.none()
 
 
 
