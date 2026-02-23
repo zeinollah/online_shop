@@ -180,7 +180,7 @@ class OrderItemCreateSerializer(serializers.ModelSerializer):
         order = validated_data['order']
 
         validated_data['product_name'] = products.name
-        validated_data['store_name'] = products.seller.store_name
+        validated_data['store_name'] = products.store.store_name
         validated_data['price'] = products.price
 
         order_item = OrderItem.objects.create(**validated_data)
@@ -193,7 +193,6 @@ class OrderItemUpdateSerializer(serializers.ModelSerializer):
 
     quantity = serializers.CharField(
         validators=[validate_quantity],
-        default=1,
         )
     discount = serializers.CharField(
         validators=[validate_discount]

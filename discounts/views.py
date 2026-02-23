@@ -61,9 +61,8 @@ class StoreDiscountInfoViewSet(viewsets.ReadOnlyModelViewSet):
         if hasattr(user, 'seller_profile'):
             return StoreDiscount.objects.filter(store=user.seller_profile.store)
 
-
         else:
-            return False
+            return StoreDiscount.objects.none()
 
 
 class StoreDiscountUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
