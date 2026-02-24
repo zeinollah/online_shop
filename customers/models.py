@@ -37,3 +37,36 @@ class CustomerProfile(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+class Wallet(models.Model):
+    customer = models.OneToOneField(CustomerProfile, on_delete=models.CASCADE, related_name='wallets')
+    balance = models.DecimalField(_('Balance'), max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('Updated at'), auto_now=True)
+
+    def __str__(self):
+        return self.customer.full_name.capitalize()
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+
+class Transaction(models.Model):
+    TRANSACTION_TYPE_CHOICES = (
+        ('top_up', 'Top Up'),
+        ('payment', 'Payment'),
+    )
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type = models.CharField(_('Transaction Type'),choices=TRANSACTION_TYPE_CHOICES, max_length=50)
+    amount = models.DecimalField(_('Amount'), max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.wallet.customer.full_name} - {self.transaction_type} - {self.amount} "
+
+    class Meta:
+        ordering = ['-created_at']
+
+

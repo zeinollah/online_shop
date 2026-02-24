@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-from .models import CustomerProfile
+from .models import CustomerProfile, Wallet
 
 User = get_user_model()
 
@@ -15,3 +15,9 @@ def create_profile(sender, instance, created, **kwargs):
 def save_profile(sender, instance, **kwargs):
     if hasattr(instance, 'customer_profile') and instance.user_role == 'customer':
         instance.customer_profile.save()
+
+
+@receiver(post_save, sender=CustomerProfile)
+def create_wallet(sender, instance, created, **kwargs):
+    if created :
+        Wallet.objects.create(customer=instance, balance=0)

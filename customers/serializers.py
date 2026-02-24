@@ -1,9 +1,14 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import CustomerProfile
+from .models import CustomerProfile, Wallet, Transaction
 from datetime import date
 
 
+
+
+"""
+Customer Profile Serializers
+"""
 class CustomerProfileSerializer(serializers.ModelSerializer):
     national_code = serializers.CharField(
         label='National Code', required=False,
@@ -52,6 +57,7 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('Please enter a valid date')
 
         return value
+
 
 
 class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
@@ -104,5 +110,54 @@ class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
         return value
 
 
-# TODO = Remove the CustomerProfileUpdateSerializer and use the CustomerProfileSerializer.
 # TODO = Use the validate class of validation utils file instead of field validation.
+
+"""
+Wallet Serializers
+"""
+class WalletInfoSerializer(serializers.ModelSerializer):
+    customer_name = serializers.CharField(source='customer.full_name', read_only=True)
+
+    class Meta:
+        model = Wallet
+        fields = [
+            "customer_name", "balance",
+        ]
+
+        read_only_fields = [
+            "customer_name", "balance",
+        ]
+
+
+
+class TransactionCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Transaction
+        fields = [
+            "wallet", "transaction_type", "amount", "created_at"
+        ]
+        read_only_fields = [
+            "wallet", "created_at"
+        ]
+
+    def validate(self, attrs):
+        transaction_type = attrs.get('transaction_type')
+        amount = attrs.get('amount')
+
+        if amount == 0 :
+            raise serializers.ValidationError(
+                "amount can't be 0"
+            )
+        if amount < 0:
+            raise serializers.ValidationError(
+                "amount can't be negative"
+            )
+        if transaction_type == "payment":
+            wallet = self.context['request'].user.customer_profile.wallets
+            if wallet.balance < amount:
+                raise serializers.ValidationError(
+                    "Insufficient wallet balance"
+                )
+
+        return attrs

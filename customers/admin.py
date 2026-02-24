@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomerProfile
+from .models import CustomerProfile, Wallet, Transaction
 
 
 
@@ -25,3 +25,30 @@ class CustomerProfileAdmin(admin.ModelAdmin):
     full_name.short_description = "Name"
 
 admin.site.register(CustomerProfile, CustomerProfileAdmin)
+
+
+class WalletAdmin(admin.ModelAdmin):
+    list_display = ["customer_name", "balance", "created_at", "updated_at"]
+    search_fields = ["customer__account__first_name", "customer__account__last_name"]
+
+    def customer_name(self, obj):
+        return obj.customer.full_name.capitalize()
+
+admin.site.register(Wallet, WalletAdmin)
+
+
+
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = [
+        "id", "wallet", "transaction_type",
+        "amount", "created_at",
+    ]
+
+    list_filter = ["wallet", "transaction_type",]
+
+    search_fields = ["customer_name"]
+
+    def customer_name(self, obj):
+        return obj.customer.full_name
+
+admin.site.register(Transaction, TransactionAdmin)
