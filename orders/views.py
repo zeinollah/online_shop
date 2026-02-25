@@ -78,6 +78,9 @@ class OrderUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
                 wallet.balance += instance.total_price
                 wallet.save()
 
+                instance.is_paid = False
+                instance.is_paid = None
+
                 WalletTransaction.objects.create(
                     wallet = wallet,
                     transaction_type = "refund",
