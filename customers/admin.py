@@ -40,7 +40,7 @@ admin.site.register(Wallet, WalletAdmin)
 
 class TransactionAdmin(admin.ModelAdmin):
     list_display = [
-        "id", "wallet", "transaction_type",
+        "id", "wallet", "transaction_type", "order",
         "amount", "created_at",
     ]
 

@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import CheckConstraint, Q
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
@@ -50,15 +51,23 @@ class Wallet(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        constraints = [
+            CheckConstraint(
+                check=Q(balance__gte=0),
+                name='wallet_balance_cannot_be_negative'
+            )
+        ]
 
 
 
 class Transaction(models.Model):
     TRANSACTION_TYPE_CHOICES = (
         ('top_up', 'Top Up'),
-        ('payment', 'Payment'),
+        ('order_payment', 'Order Payment'),
+        ('refund', 'Refund'),
     )
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transactions')
+    order = models.ForeignKey('orders.Order', on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')
     transaction_type = models.CharField(_('Transaction Type'),choices=TRANSACTION_TYPE_CHOICES, max_length=50)
     amount = models.DecimalField(_('Amount'), max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(_('Created at'), auto_now_add=True)

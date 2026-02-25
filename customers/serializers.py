@@ -135,10 +135,10 @@ class TransactionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = [
-            "wallet", "transaction_type", "amount", "created_at"
+            "order", "transaction_type", "amount", "created_at"
         ]
         read_only_fields = [
-            "wallet", "created_at"
+            "order", "created_at"
         ]
 
     def validate(self, attrs):
@@ -153,7 +153,7 @@ class TransactionCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "amount can't be negative"
             )
-        if transaction_type == "payment":
+        if transaction_type == "order_payment":
             wallet = self.context['request'].user.customer_profile.wallets
             if wallet.balance < amount:
                 raise serializers.ValidationError(
