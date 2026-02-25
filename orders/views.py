@@ -1,6 +1,8 @@
+from django.db import transaction
 from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from customers.models import Wallet, Transaction as WalletTransaction
 from utils.permissions import IsOrderOwnerOrSuperuser
 from .models import OrderItem
 from .serializers import (
@@ -68,7 +70,23 @@ class OrderUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+
+        new_status = request.data.get("order_status") # Refund money to customer after canceled payd order by wallet
+        if new_status == "cancelled" and instance.is_paid and instance.payment_method == "wallet":
+            with transaction.atomic():
+                wallet = Wallet.objects.select_for_update().get(customer=instance.customer)
+                wallet.balance += instance.total_price
+                wallet.save()
+
+                WalletTransaction.objects.create(
+                    wallet = wallet,
+                    transaction_type = "refund",
+                    amount = instance.total_price,
+                    order = instance,
+                )
+                serializer.save()
+        else:
+            serializer.save()
 
         return Response(
             {"message": "Order updated."},
