@@ -1,0 +1,53 @@
+========================================
+ORDER CONFIRMATION
+========================================
+
+Hi {{ customer_name }},
+
+Thank you for your order. Your payment has been received and your order is being processed.
+
+
+ORDER DETAILS
+========================================
+Order Number: {{ order.order_number }}
+Order Date: {{ order.created_at|date:"F d, Y" }}
+Payment Method: {{ order.payment_method|title }}
+Order Status: {{ order.order_status|title }}
+
+
+ORDER ITEMS
+========================================
+{% for item in order_items %}
+Product: {{ item.product_name }}
+Store: {{ item.store_name }}
+Quantity: {{ item.quantity }}
+Price: ${{ item.price }}
+Subtotal: ${{ item.subtotal }}
+{% if item.discount > 0 %}
+Discount Applied: -${{ item.discount }}
+{% endif %}
+----------------------------------------
+{% endfor %}
+
+
+TOTAL SUMMARY
+========================================
+Subtotal: ${{ subtotal }}
+{% if total_discount > 0 %}Total Discount: -${{ total_discount }}
+{% endif %}Total Amount Paid: ${{ final_total }}
+
+
+SHIPPING ADDRESS
+========================================
+City: {{ order.shipping_city }}
+Address: {{ order.shipping_address }}
+Post Code: {{ order.shipping_post_code }}
+Phone: {{ order.shipping_phone }}
+
+
+We will send you another email when your order ships.
+
+Thank you for shopping with us!
+If you have any questions, please contact our support team.
+
+This is an automated message. Please do not reply to this email.
