@@ -1,6 +1,9 @@
 from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.db import transaction as django_transaction
+from django.utils import timezone
+from orders.models import Order
 from utils.permissions import IsCustomerProfileOwnerOrSuperuser
 from .models import CustomerProfile, Wallet, Transaction
 from .serializers import (
@@ -111,18 +114,19 @@ class TransactionCreateViewSet(viewsets.ModelViewSet):
     http_method_names = ['post']
 
     def create(self, request, *args, **kwargs):
-        wallet = request.user.customer_profile.wallets
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        transaction = serializer.save(wallet=wallet)
 
-        if transaction.transaction_type == "top_up":
-            wallet.balance += transaction.amount
+        with django_transaction.atomic():
+            wallet = Wallet.objects.select_for_update().get(customer=request.user.customer_profile)
+            trans = serializer.save(wallet=wallet)
 
-        elif transaction.transaction_type == "payment":
-            wallet.balance -= transaction.amount
+            if trans.transaction_type == "top_up":
+                wallet.balance += trans.amount
+            elif trans.transaction_type == "order_payment":
+                wallet.balance -= trans.amount
 
-        wallet.save()
+            wallet.save()
 
         return Response(
             {"message": "Transaction completed successfully"},
@@ -141,3 +145,76 @@ class TransactionHistoryViewSet(viewsets.ReadOnlyModelViewSet):
         if user.is_superuser or user.is_staff:
             return Transaction.objects.all()
         return Transaction.objects.filter(wallet=user.customer_profile.wallets).order_by("-created_at")
+
+
+
+class PayOrderViewSet(viewsets.GenericViewSet):
+    """
+    Paid order by wallet balance
+    """
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['post']
+
+    def create(self, request, *args, **kwargs):
+        if not hasattr(request.user, 'customer_profile'):
+            return Response(
+                {"message": "Profile is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        order_id = request.data.get('order_id')
+        if not order_id:
+            return Response(
+                {"message": "Order id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            order = Order.objects.get(id=order_id, customer=request.user.customer_profile)
+        except Order.DoesNotExist:
+            return Response(
+                {"message": "Order does not exist"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if order.is_paid:
+            return Response(
+                {"message": "Order is already paid"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if order.order_status == "cancelled":
+            return Response(
+                {"message": "Order is cancelled"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        with django_transaction.atomic():
+            wallet = Wallet.objects.select_for_update().get(customer=request.user.customer_profile)
+
+            if wallet.balance < order.total_price:
+                return Response(
+                    {"message": "Insufficient wallet balance"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            wallet.balance -= order.total_price
+            wallet.save()
+
+            Transaction.objects.create(
+                wallet=wallet,
+                transaction_type='order_payment',
+                amount=order.total_price,
+                order=order
+            )
+
+            order.is_paid = True
+            order.paid_at = timezone.now()
+            order.order_status = 'paid'
+            order.payment_method = 'wallet'
+            order.save()
+
+        return Response(
+            {"message": "Order paid successfully"},
+            status=status.HTTP_201_CREATED
+        )
