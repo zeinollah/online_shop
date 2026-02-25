@@ -7,6 +7,7 @@ from .views import (
     WalletInfoViewSet,
     TransactionCreateViewSet,
     TransactionHistoryViewSet,
+    PayOrderViewSet
     )
 
 router = DefaultRouter()
@@ -21,6 +22,7 @@ router.register(r'delete-profiles', CustomerProfileDetailViewSet, basename='dele
 router.register(r'wallet-info', WalletInfoViewSet, basename='wallet-info')
 router.register(r'transactions', TransactionCreateViewSet, basename='transactions')
 router.register(r'transactions-history', TransactionHistoryViewSet, basename='transactions-history')
+router.register(r'pay-order', PayOrderViewSet, basename='pay-order')
 urlpatterns = router.urls
 
 # TODO = Add -customers- into urls and remove s from profiles
