@@ -6,6 +6,7 @@ from django.utils import timezone
 from orders.models import Order
 from utils.permissions import IsCustomerProfileOwnerOrSuperuser
 from .models import CustomerProfile, Wallet, Transaction
+from utils.emails import send_order_confirmation_email
 from .serializers import (
     CustomerProfileSerializer,
     CustomerProfileUpdateSerializer,
@@ -213,7 +214,7 @@ class PayOrderViewSet(viewsets.GenericViewSet):
             order.order_status = 'paid'
             order.payment_method = 'wallet'
             order.save()
-
+            send_order_confirmation_email(order)
         return Response(
             {"message": "Order paid successfully"},
             status=status.HTTP_201_CREATED
