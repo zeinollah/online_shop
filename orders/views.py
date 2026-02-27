@@ -79,7 +79,7 @@ class OrderUpdateViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
                 wallet.save()
 
                 instance.is_paid = False
-                instance.is_paid = None
+                instance.paid_at = None
 
                 WalletTransaction.objects.create(
                     wallet = wallet,
