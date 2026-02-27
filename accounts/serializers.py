@@ -28,22 +28,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
 
     def create(self, validated_data):
-        first_name = validated_data['first_name']
-        last_name = validated_data['last_name']
-        email = validated_data['email']
-        user_role = validated_data['user_role']
         password = validated_data.pop('password')
+        user = User.objects.create(**validated_data)
+        user.set_password(password)
+        user.save()
 
-        user = get_user_model()
-        new_user = user.objects.create(
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            user_role=user_role,
-        )
-        new_user.set_password(password)
-        new_user.save()
-        return new_user
+        return user
 
 
 class UpdateUserSerializer(serializers.ModelSerializer):
@@ -60,9 +50,9 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
             if query_email.exists():
                 raise serializers.ValidationError(
-                    {"email": "This email is already in use."},
-                    status.HTTP_400_BAD_REQUEST
+                    {"email": "This email is already in use."}
                 )
+
 
         return attrs
 
@@ -114,6 +104,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.set_password(self.validated_data['new_password'])
         user.save()
         return user
+
 
 
 """Login / Logout Serializers"""

@@ -22,15 +22,14 @@ from utils.emails import send_verification_email
 User = get_user_model()
 
 """CRUD Views"""
-
-class RegistrationViewSet(viewsets.ModelViewSet):
+class RegistrationViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = RegistrationSerializer
     permission_classes = [AllowAny]
     http_method_names = ['post']
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         token = EmailVerificationToken.objects.create(user=user)
@@ -52,8 +51,6 @@ class RegistrationViewSet(viewsets.ModelViewSet):
 
 
 class UserInfoViewSet(viewsets.ReadOnlyModelViewSet):
-
-
     queryset = User.objects.all()
     serializer_class = RegistrationSerializer
     permission_classes = [CurrentUserOrAdmin]
@@ -74,7 +71,7 @@ class UpdateUserViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
 
         instance = self.get_object()
         self.check_object_permissions(request, instance)
-        serializer = self.serializer_class(instance, data=request.data, partial=True)
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
@@ -98,17 +95,15 @@ class DeleteUserViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
         )
 
 
-# TODO = Replace the local permission class by utils permission class
 
 """Change Password"""
-
 class ChangePasswordViewSet(viewsets.GenericViewSet):
     serializer_class = ChangePasswordSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ['post']
 
-    def put(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
@@ -118,16 +113,14 @@ class ChangePasswordViewSet(viewsets.GenericViewSet):
 
 
 
-
 """Login / Logout Views"""
-
 class LoginViewSet(viewsets.GenericViewSet):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
     http_method_names = ['post']
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,context={'request': request})
+        serializer = self.get_serializer(data=request.data,context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         user.last_login = timezone.now()
@@ -156,7 +149,7 @@ class LogoutViewSet(viewsets.GenericViewSet):
     http_method_names = ['post']
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         try:
@@ -174,6 +167,7 @@ class LogoutViewSet(viewsets.GenericViewSet):
                 {"error": f"Token validation failed: {str(e)}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
 
 
 """Email Verification Views"""
@@ -239,7 +233,7 @@ class ResendVerificationViewSet(viewsets.GenericViewSet):
     http_method_names = ['post']
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.context['user']
 
